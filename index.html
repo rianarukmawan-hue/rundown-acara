@@ -146,6 +146,15 @@
   .s-actions{display:flex;align-items:center;gap:2px}
   .s-move{display:flex;flex-direction:column}
   .s-move .icon-btn{width:32px;height:26px;border-radius:7px}
+  .s-toggle{color:var(--primary)}
+  .s-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 8px 0}
+  .s-card .chip{
+    display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;
+    padding:2px 9px;border-radius:99px;background:var(--primary-soft);color:var(--primary-strong);
+    white-space:nowrap;
+  }
+  .s-card .chip.amber{background:var(--amber-soft);color:var(--amber)}
+  .s-card .chip .ic{width:13px;height:13px}
   .s-body{display:grid;grid-template-columns:1fr 1fr auto;gap:10px 12px;padding:8px 14px 0 14px}
   .s-note-wrap{padding:10px 14px 0 14px}
   textarea{min-height:58px;resize:vertical}
@@ -415,6 +424,8 @@ function icon(name, cls) {
   const paths = {
     up: '<path d="m18 15-6-6-6 6"/>',
     down: '<path d="m6 9 6 6 6-6"/>',
+    chevRight: '<path d="m9 18 6-6-6-6"/>',
+    chevDown: '<path d="m6 9 6 6 6-6"/>',
     trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/>',
     pin: '<path d="M12 17v5"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>',
     coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
@@ -459,6 +470,7 @@ function defaultState() {
   };
 }
 let state = load();
+let expandedIds = new Set();  // id sesi yang sedang diperluas (hanya UI, tidak disimpan)
 function load() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -548,15 +560,24 @@ function renderEditor() {
       const pinned = s.pinnedJam != null && s.pinnedJam !== "";
       const warn = s.overlap ? '<div class="s-warn">' + icon("warn") + "Tumpang-tindih dengan sesi sebelumnya</div>" : "";
       const pinTitle = pinned ? "Lepas kunci jam mulai" : "Kunci jam mulai (pin)";
+      const expanded = expandedIds.has(s.id);
+      const toggleTitle = expanded ? "Ciutkan detail" : "Perluas detail";
+      const metaChips = [];
+      const bagLabel = (s.bagian || "").trim();
+      if (bagLabel && !s.isIstirahat) metaChips.push('<span class="chip">' + esc(bagLabel) + "</span>");
+      metaChips.push('<span class="chip">' + (s.durasiMenit || 0) + " mnt</span>");
+      if (s.isIstirahat) metaChips.push('<span class="chip amber">' + icon("coffee") + " Istirahat</span>");
       return (
         '<article class="s-card' + (pinned ? " pinned" : "") + (s.isIstirahat ? " break-card" : "") + '" data-id="' + s.id + '" style="--accent:' + accent + '">' +
           '<div class="s-head">' +
             '<div class="s-time"><small>' + (pinned ? "Di-pin" : "Mulai") + "</small>" + fmtMin(s.start) + "</div>" +
             '<div class="s-name-wrap">' +
               '<input class="s-name" data-f="nama" placeholder="Nama sesi (cth: Sambutan)" value="' + esc(s.nama) + '" aria-label="Nama sesi">' +
+              (expanded ? "" : '<div class="s-meta">' + metaChips.join("") + "</div>") +
               (warn) +
             "</div>" +
             '<div class="s-actions">' +
+              '<button class="icon-btn s-toggle" data-a="toggle" data-i="' + i + '" aria-label="' + toggleTitle + '" title="' + toggleTitle + '" aria-expanded="' + expanded + '">' + icon(expanded ? "chevDown" : "chevRight") + "</button>" +
               '<div class="s-move">' +
                 '<button class="icon-btn" data-a="up" data-i="' + i + '" aria-label="Naikkan sesi" title="Naikkan" ' + (i === 0 ? "disabled" : "") + ">" + icon("up") + "</button>" +
                 '<button class="icon-btn" data-a="down" data-i="' + i + '" aria-label="Turunkan sesi" title="Turunkan" ' + (i === state.sesi.length - 1 ? "disabled" : "") + ">" + icon("down") + "</button>" +
@@ -565,6 +586,7 @@ function renderEditor() {
               '<button class="icon-btn danger" data-a="del" data-i="' + i + '" aria-label="Hapus sesi" title="Hapus sesi">' + icon("trash") + "</button>" +
             "</div>" +
           "</div>" +
+          '<div class="s-details"' + (expanded ? "" : " hidden") + ">" +
           '<div class="s-body">' +
             '<div class="field"><label class="s-label" for="b-' + s.id + '">Bagian</label>' +
               '<input id="b-' + s.id + '" class="input s-bagian" list="bagian-list" data-f="bagian" value="' + esc(s.bagian) + '" placeholder="cth: Pembukaan">' +
@@ -588,6 +610,7 @@ function renderEditor() {
           "</div>" +
           '<div class="s-note-wrap"><label class="s-label" for="n-' + s.id + '">Catatan (opsional)</label>' +
             '<textarea id="n-' + s.id + '" class="s-note" data-f="catatan" placeholder="cth: Siapkan mikrofon, undang tamu ke panggung...">' + esc(s.catatan) + "</textarea>" +
+          "</div>" +
           "</div>" +
         "</article>"
       );
@@ -786,7 +809,9 @@ document.getElementById("jam-mulai").addEventListener("input", e => {
   renderEditor();
 });
 document.getElementById("btn-add").addEventListener("click", () => {
-  state.sesi.push({ id: uid(), nama: "", durasiMenit: 10, pic: "", catatan: "", bagian: uniqueBagian()[0] || "", isIstirahat: false, pinnedJam: null });
+  const newId = uid();
+  state.sesi.push({ id: newId, nama: "", durasiMenit: 10, pic: "", catatan: "", bagian: uniqueBagian()[0] || "", isIstirahat: false, pinnedJam: null });
+  expandedIds.add(newId);
   save(); renderEditor();
   const last = document.querySelector("#session-list .s-card:last-child .s-name");
   if (last) last.focus();
@@ -816,6 +841,9 @@ document.getElementById("session-list").addEventListener("click", e => {
   else if (a === "pin") {
     if (s.pinnedJam != null && s.pinnedJam !== "") s.pinnedJam = null;
     else s.pinnedJam = fmtMin(computeSchedule()[i].start);
+  }
+  else if (a === "toggle") {
+    if (expandedIds.has(s.id)) expandedIds.delete(s.id); else expandedIds.add(s.id);
   }
   save(); renderEditor();
 });
