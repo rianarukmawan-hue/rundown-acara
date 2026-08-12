@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Susunan Acara — Pengatur Rundown</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#7C3AED">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Susunan Acara">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#7C3AED;
+    --primary-strong:#6D28D9;
+    --primary-soft:#F3ECFF;
+    --secondary:#A78BFA;
+    --cta:#F97316;
+    --cta-strong:#EA580C;
+    --cta-soft:#FFF1E6;
+    --bg:#FAF5FF;
+    --surface:#FFFFFF;
+    --line:#E9DEFB;
+    --text:#4C1D95;
+    --text-muted:#6B54A6;
+    --amber:#D97706;
+    --amber-soft:#FFF7E6;
+    --green:#059669;
+    --danger:#DC2626;
+    --danger-soft:#FEE9E9;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(76,29,149,.06), 0 10px 28px -14px rgba(76,29,149,.22);
+    --shadow-sm:0 1px 3px rgba(76,29,149,.10);
+    --focus:0 0 0 3px rgba(124,58,237,.32);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(165deg,#FAF5FF 0%,#F1E8FE 100%);
+    background-attachment:fixed;
+    color:var(--text);
+    min-height:100vh;
+    line-height:1.5;
+    font-size:16px;
+  }
+  .ic{width:18px;height:18px;flex:none;display:block}
+  .ic-lg{width:22px;height:22px}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  input,textarea{font:inherit;color:inherit}
+  ::placeholder{color:#A996D4}
+
+  /* ============ BUTTONS ============ */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 16px;border-radius:10px;font-weight:600;font-size:15px;
+    border:1px solid transparent;transition:background-color .2s,border-color .2s,box-shadow .2s,transform .1s;
+    cursor:pointer;white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible,.input:focus-visible,textarea:focus-visible,.switch input:focus-visible + .switch-track{outline:var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow-sm)}
+  .btn-primary:hover{background:var(--primary-strong)}
+  .btn-cta{background:var(--cta);color:#fff;box-shadow:0 4px 14px -4px rgba(249,115,22,.55)}
+  .btn-cta:hover{background:var(--cta-strong)}
+  .btn-ghost{background:var(--surface);border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--secondary);box-shadow:var(--shadow-sm)}
+  .btn-ghost.dark{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#F4EEFF}
+  .btn-ghost.dark:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.28)}
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:10px;color:var(--text-muted);
+    border:1px solid transparent;transition:background-color .18s,color .18s,border-color .18s;
+  }
+  .icon-btn:hover{background:var(--primary-soft);color:var(--primary)}
+  .icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+  .icon-btn:disabled{opacity:.35;cursor:not-allowed}
+  .icon-btn:disabled:hover{background:none;color:var(--text-muted)}
+
+  /* ============ INPUTS ============ */
+  .input,textarea{
+    width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);
+    background:var(--surface);color:var(--text);transition:border-color .18s,box-shadow .18s;
+  }
+  .input:hover,textarea:hover{border-color:var(--secondary)}
+  .input:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(124,58,237,.18)}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label,.s-label{font-size:12.5px;font-weight:600;color:var(--text-muted);letter-spacing:.02em;text-transform:uppercase}
+
+  /* ============ LAYOUT ============ */
+  #editor{max-width:760px;margin:0 auto;padding:20px 16px 64px}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    padding:14px 0 20px;
+  }
+  .topbar-brand{display:flex;align-items:center;gap:12px}
+  .logo{
+    width:44px;height:44px;border-radius:12px;flex:none;
+    background:linear-gradient(135deg,var(--primary),#A855F7);
+    display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:var(--shadow-sm);
+  }
+  .brand-title{font-family:"Bebas Neue",sans-serif;font-size:26px;letter-spacing:.06em;line-height:1}
+  .save-status{font-size:12.5px;color:var(--text-muted);display:flex;align-items:center;gap:5px;margin-top:2px}
+  .save-status .dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+  .topbar-actions{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:16px;
+  }
+  .judul-card{margin-bottom:18px}
+  .title-input{
+    font-size:22px;font-weight:700;padding:12px 14px;margin-top:6px;
+    font-family:"Bebas Neue",sans-serif;letter-spacing:.04em;
+  }
+
+  /* ============ SESSION CARDS ============ */
+  .session-list{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+  .s-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:14px 14px 14px 0;position:relative;overflow:hidden;
+  }
+  .s-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,#7C3AED)}
+  .s-card.break-card::before{background:linear-gradient(180deg,#F59E0B,#D97706)}
+  .s-head{display:flex;align-items:flex-start;gap:10px;padding:0 12px 0 14px}
+  .s-time{
+    flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+    background:var(--primary-soft);color:var(--primary-strong);
+    border-radius:10px;padding:7px 10px;font-weight:700;font-size:14.5px;line-height:1.2;min-width:104px;
+  }
+  .s-card.pinned .s-time{background:var(--cta-soft);color:var(--cta-strong)}
+  .s-time small{font-size:11.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em}
+  .s-name-wrap{flex:1;min-width:0}
+  .s-name{
+    width:100%;border:none;background:transparent;font-size:16.5px;font-weight:600;padding:6px 8px;border-radius:8px;
+  }
+  .s-name:hover{background:var(--primary-soft)}
+  .s-name:focus{outline:none;background:var(--primary-soft);box-shadow:0 0 0 2px rgba(124,58,237,.35)}
+  .s-actions{display:flex;align-items:center;gap:2px}
+  .s-move{display:flex;flex-direction:column}
+  .s-move .icon-btn{width:32px;height:26px;border-radius:7px}
+  .s-body{display:grid;grid-template-columns:1fr 1fr auto;gap:10px 12px;padding:8px 14px 0 14px}
+  .s-note-wrap{padding:10px 14px 0 14px}
+  textarea{min-height:58px;resize:vertical}
+  .s-warn{
+    display:flex;align-items:center;gap:6px;color:var(--cta-strong);
+    font-size:12.5px;font-weight:600;margin-top:6px;
+  }
+  .s-warn .ic{width:15px;height:15px}
+  .dur-input-wrap{display:flex;align-items:center;gap:8px}
+  .dur-input{width:86px}
+  .dur-unit{font-size:14px;color:var(--text-muted);font-weight:600;white-space:nowrap}
+
+  /* switch */
+  .switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;min-height:44px}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch-track{
+    width:42px;height:24px;border-radius:99px;background:#DDD2F2;position:relative;flex:none;
+    transition:background-color .2s;border:1px solid var(--line);
+  }
+  .switch-track::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s;
+  }
+  .switch input:checked + .switch-track{background:#F59E0B;border-color:#F59E0B}
+  .switch input:checked + .switch-track::after{transform:translateX(18px)}
+  .switch-label{font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+  .switch-label .ic{width:15px;height:15px;color:#D97706}
+
+  .btn-add{
+    width:100%;padding:14px;border:2px dashed var(--secondary);border-radius:var(--radius);
+    color:var(--primary);font-weight:700;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:rgba(255,255,255,.55);transition:background-color .2s,border-color .2s;
+  }
+  .btn-add:hover{background:var(--primary-soft);border-color:var(--primary)}
+
+  .summary{
+    margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;
+  }
+  .summary .stat{
+    flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;box-shadow:var(--shadow-sm);
+  }
+  .summary .stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);font-weight:700}
+  .summary .stat .v{font-size:19px;font-weight:700;margin-top:2px}
+  .empty{
+    text-align:center;padding:40px 20px;color:var(--text-muted);
+    background:var(--surface);border:2px dashed var(--line);border-radius:var(--radius);
+  }
+  .empty .ic{width:34px;height:34px;margin:0 auto 10px;color:var(--secondary)}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    background:#2A154F;color:#F6EEFF;padding:11px 20px;border-radius:99px;font-weight:600;font-size:14.5px;
+    box-shadow:0 12px 32px -8px rgba(42,21,79,.5);display:flex;align-items:center;gap:8px;z-index:50;
+    max-width:calc(100vw - 32px);transition:opacity .25s,transform .25s;
+  }
+  .toast.error{background:#7F1D1D}
+  .toast .ic{width:16px;height:16px}
+
+  /* ============ LIVE MODE ============ */
+  .live{
+    min-height:100vh;background:linear-gradient(180deg,#150A2E 0%,#1D0F3F 60%,#241145 100%);
+    color:#F4EEFF;padding:18px 20px 60px;
+  }
+  .live-top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;gap:14px;flex-wrap:wrap}
+  .live-clock{
+    font-family:"Bebas Neue",sans-serif;font-size:40px;letter-spacing:.08em;color:#FDE9D9;
+    text-shadow:0 2px 18px rgba(249,115,22,.35);line-height:1;
+  }
+  .live-hero{max-width:980px;margin:26px auto 0;text-align:center}
+  .live-judul{
+    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(34px,6vw,58px);
+    letter-spacing:.05em;color:#EDE4FF;line-height:1.05;
+  }
+  .live-countdown{
+    font-family:"Bebas Neue",sans-serif;font-weight:400;
+    font-size:clamp(72px,15vw,150px);line-height:1;margin-top:14px;
+    background:linear-gradient(180deg,#FDBA74,#F97316);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;text-fill-color:transparent;
+    filter:drop-shadow(0 6px 30px rgba(249,115,22,.35));font-variant-numeric:tabular-nums;
+  }
+  .live-countdown-label{font-size:clamp(17px,3vw,22px);font-weight:600;color:#C9B8F2;margin-top:8px;min-height:28px}
+  .live-countdown-label strong{color:#FFE3CC;font-weight:700}
+  .live-progress{max-width:520px;margin:22px auto 0;height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+  .live-progress-bar{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#A78BFA,#F97316);transition:width .4s linear}
+  .live-list{max-width:980px;margin:34px auto 0;display:flex;flex-direction:column;gap:10px}
+  .l-row{
+    display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+    transition:background-color .3s,border-color .3s,transform .3s;
+  }
+  .l-time{flex:none;font-weight:700;font-size:16px;color:#B9A8E8;font-variant-numeric:tabular-nums;min-width:96px}
+  .l-body{flex:1;min-width:0}
+  .l-name{font-size:clamp(17px,2.4vw,22px);font-weight:700;line-height:1.2}
+  .l-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap}
+  .chip{
+    display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;
+    padding:3px 10px;border-radius:99px;background:rgba(255,255,255,.10);color:#CFC0F4;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .chip.amber{background:rgba(245,158,11,.18);color:#FCD9A0}
+  .chip.green{background:rgba(16,185,129,.18);color:#9CE8CE}
+  .l-status{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:800;letter-spacing:.08em;padding:6px 12px;border-radius:99px;text-transform:uppercase;white-space:nowrap}
+  .l-right{flex:none;display:flex;align-items:center}
+  .l-status .ic,.chip .ic{width:14px;height:14px}
+  .l-row.done{opacity:.42}
+  .l-row.done .l-name{text-decoration:line-through}
+  .l-row.active{
+    background:linear-gradient(90deg,rgba(124,58,237,.32),rgba(168,85,247,.18));
+    border-color:rgba(167,139,250,.65);box-shadow:0 0 0 1px rgba(167,139,250,.35),0 8px 40px -12px rgba(124,58,237,.55);
+  }
+  .l-row.next{border-color:rgba(249,115,22,.55);box-shadow:0 0 24px -8px rgba(249,115,22,.35)}
+  .l-status.live{background:#8B5CF6;color:#fff}
+  .l-status.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
+  .l-status.done{background:rgba(16,185,129,.16);color:#9CE8CE}
+  .live-end{text-align:center;font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,8vw,72px);letter-spacing:.06em;color:#FDE68A;margin-top:30px}
+
+  @media (max-width:600px){
+    body{font-size:15.5px}
+    .topbar-actions{width:100%}
+    .topbar-actions .btn{flex:1;justify-content:center;padding:12px 10px;min-height:44px}
+    .topbar-actions .field{flex:1}
+    .s-body{grid-template-columns:1fr}
+    .s-time{min-width:96px}
+    .icon-btn{width:42px;height:42px}
+    .s-move .icon-btn{width:36px;height:30px}
+    .l-row{flex-wrap:wrap;gap:8px}
+    .l-time{min-width:0;width:100%}
+    .l-status{width:100%;text-align:center}
+    .l-right{width:100%;justify-content:center}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{transition:none!important;animation:none!important}
+  }
+
+  /* ============ CETAK / PDF ============ */
+  #print-area{display:none}
+  @media print{
+    body{background:#fff}
+    #editor,#live,.toast,#file-input{display:none!important}
+    #print-area{
+      display:block;color:#1a1a1a;font-family:"Source Sans 3",system-ui,sans-serif;
+      font-size:12px;line-height:1.45;max-width:100%;
+    }
+    #print-area .p-title{
+      font-family:"Bebas Neue",sans-serif;font-size:26px;letter-spacing:.04em;
+      color:#4C1D95;margin:0 0 2px;
+    }
+    #print-area .p-sub{font-size:12px;color:#444;margin-bottom:14px}
+    #print-area table{width:100%;border-collapse:collapse;margin-top:4px}
+    #print-area th,#print-area td{
+      border:1px solid #bbb;padding:6px 8px;text-align:left;vertical-align:top;
+    }
+    #print-area th{
+      background:#f0eafc;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;
+    }
+    #print-area td.p-no{width:28px;text-align:center;color:#555}
+    #print-area td.p-time{white-space:nowrap;font-variant-numeric:tabular-nums}
+    #print-area td.p-name{font-weight:600}
+    #print-area td.p-dur{white-space:nowrap}
+    #print-area td.p-note{color:#333}
+    #print-area .p-break{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.05em;
+      color:#B45309;border:1px solid #D9A24C;border-radius:99px;padding:0 6px;margin-left:6px;vertical-align:1px}
+    #print-area tr.p-row-break td{color:#666}
+    #print-area tr{break-inside:avoid}
+    #print-area .p-footer{margin-top:12px;font-size:11.5px;color:#444}
+    #print-area .p-footer strong{color:#4C1D95}
+    #print-area .p-empty{color:#666;font-style:italic}
+  }
+</style>
+</head>
+<body>
+
+<main id="editor">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="logo">
+        <svg class="ic ic-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+      <div>
+        <div class="brand-title">Susunan Acara</div>
+        <div class="save-status"><span class="dot"></span><span id="save-text">Tersimpan otomatis</span></div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="field">
+        <label for="jam-mulai">Jam mulai acara</label>
+        <input id="jam-mulai" type="time" class="input" value="08:00">
+      </div>
+      <button id="btn-import" class="btn btn-ghost" title="Import dari file JSON">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        Import
+      </button>
+      <button id="btn-export" class="btn btn-ghost" title="Simpan sebagai file JSON">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        Export
+      </button>
+      <button id="btn-print" class="btn btn-ghost" title="Cetak rundown atau simpan sebagai PDF">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak / PDF
+      </button>
+      <button id="btn-live" class="btn btn-cta">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="m10 8 5 2.5-5 2.5z"/><path d="M8 21h8M12 17v4"/></svg>
+        Mode Tampil
+      </button>
+      <button id="btn-install" class="btn btn-ghost" hidden title="Pasang aplikasi ke layar utama HP">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+        Pasang
+      </button>
+    </div>
+  </header>
+
+  <section class="card judul-card">
+    <label class="s-label" for="judul">Judul acara</label>
+    <input id="judul" class="input title-input" placeholder="cth: Rapat Kerja Tahunan 2026">
+  </section>
+
+  <section id="session-list" class="session-list" aria-label="Daftar sesi"></section>
+
+  <button id="btn-add" class="btn-add">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    Tambah Sesi
+  </button>
+
+  <footer id="summary" class="summary"></footer>
+</main>
+
+<main id="live" class="live" hidden>
+  <div class="live-top">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="btn-back" class="btn btn-ghost dark">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M5 12h14"/></svg>
+        Kembali ke Editor
+      </button>
+      <button id="btn-fs" class="btn btn-ghost dark" title="Layar penuh">
+        <svg class="ic ic-fs-max" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <svg class="ic ic-fs-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+        <span id="fs-label">Layar Penuh</span>
+      </button>
+    </div>
+    <div class="live-clock" id="live-clock" aria-live="off"></div>
+  </div>
+  <div class="live-hero">
+    <h1 class="live-judul" id="live-judul"></h1>
+    <div class="live-countdown" id="live-countdown" aria-live="off">--:--</div>
+    <div class="live-countdown-label" id="live-countdown-label"></div>
+    <div class="live-progress" id="live-progress" hidden><div class="live-progress-bar" id="live-progress-bar"></div></div>
+  </div>
+  <div class="live-list" id="live-list" aria-label="Rundown berjalan"></div>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="file-input" accept="application/json,.json" hidden>
+
+<section id="print-area" aria-hidden="true"></section>
+
+<script>
+"use strict";
+
+/* ================== KONSTAN & UTIL ================== */
+const STORE_KEY = "rundownAcara.v1";
+const PALETTE = ["#7C3AED","#0EA5E9","#059669","#F97316","#DB2777","#0891B2","#65A30D","#9333EA","#DC2626","#0D9488"];
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Math.random().toString(36).slice(2) + Date.now().toString(36));
+
+function icon(name, cls) {
+  const paths = {
+    up: '<path d="m18 15-6-6-6 6"/>',
+    down: '<path d="m6 9 6 6 6-6"/>',
+    trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/>',
+    pin: '<path d="M12 17v5"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>',
+    coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
+    warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4M12 17h.01"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    note: '<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><path d="M15 3v6h6"/>'
+  };
+  return '<svg class="ic ' + (cls || "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || "") + "</svg>";
+}
+
+function toMin(hhmm) {
+  if (!/^\d{1,2}:\d{2}$/.test(hhmm)) return 0;
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+function validHM(v) { return typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v); }
+function fmtMin(min) {
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+}
+function fmtDur(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return (h > 0 ? String(h).padStart(2, "0") + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ================== STATE ================== */
+function defaultState() {
+  return {
+    judulAcara: "Susunan Acara",
+    jamMulaiAcara: "08:00",
+    sesi: [
+      { id: uid(), nama: "Pembukaan",      durasiMenit: 15, pic: "", catatan: "", bagian: "Pembukaan",    isIstirahat: false, pinnedJam: null },
+      { id: uid(), nama: "Sambutan Panitia",durasiMenit: 10, pic: "", catatan: "", bagian: "Pembukaan",    isIstirahat: false, pinnedJam: null },
+      { id: uid(), nama: "Acara Inti",      durasiMenit: 60, pic: "", catatan: "", bagian: "Acara Inti",   isIstirahat: false, pinnedJam: null },
+      { id: uid(), nama: "Istirahat",       durasiMenit: 15, pic: "", catatan: "", bagian: "Istirahat",    isIstirahat: true,  pinnedJam: null },
+      { id: uid(), nama: "Penutup & Doa",   durasiMenit: 10, pic: "", catatan: "", bagian: "Penutup",      isIstirahat: false, pinnedJam: null }
+    ]
+  };
+}
+let state = load();
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const res = validateImport(parsed);
+    return res.ok ? res.data : defaultState();
+  } catch (e) { return defaultState(); }
+}
+function save(silent) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* storage penuh / private mode */ }
+  if (!silent) {
+    const el = document.getElementById("save-text");
+    el.textContent = "Tersimpan otomatis · " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  }
+}
+
+/* ================== VALIDASI IMPORT ================== */
+function validateImport(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return { ok: false, msg: "File bukan objek rundown yang valid." };
+  if (!Array.isArray(data.sesi)) return { ok: false, msg: "Struktur file salah: properti \"sesi\" harus berupa daftar (array)." };
+  const sesi = [];
+  for (const raw of data.sesi) {
+    if (!raw || typeof raw !== "object") return { ok: false, msg: "Ada entri sesi yang tidak valid." };
+    const d = Number(raw.durasiMenit);
+    if (!Number.isFinite(d) || d < 0 || Math.floor(d) !== d) return { ok: false, msg: "Sesi \"" + (raw.nama || "tanpa nama") + "\" punya durasi tidak valid (harus angka menit ≥ 0)." };
+    sesi.push({
+      id: typeof raw.id === "string" && raw.id ? raw.id : uid(),
+      nama: typeof raw.nama === "string" ? raw.nama : "",
+      durasiMenit: d,
+      pic: typeof raw.pic === "string" ? raw.pic : "",
+      catatan: typeof raw.catatan === "string" ? raw.catatan : "",
+      bagian: typeof raw.bagian === "string" ? raw.bagian : "",
+      isIstirahat: !!raw.isIstirahat,
+      pinnedJam: validHM(raw.pinnedJam) ? raw.pinnedJam : null
+    });
+  }
+  return {
+    ok: true,
+    data: {
+      judulAcara: typeof data.judulAcara === "string" && data.judulAcara.trim() ? data.judulAcara : "Susunan Acara",
+      jamMulaiAcara: validHM(data.jamMulaiAcara) ? data.jamMulaiAcara : "08:00",
+      sesi: sesi
+    }
+  };
+}
+
+/* ================== PERHITUNGAN WAKTU ================== */
+function computeSchedule() {
+  let cursor = toMin(state.jamMulaiAcara);
+  const list = state.sesi.map(s => {
+    const start = (s.pinnedJam != null && s.pinnedJam !== "") ? toMin(s.pinnedJam) : cursor;
+    const end = start + (s.durasiMenit || 0);
+    cursor = end;
+    return { ...s, start, end };
+  });
+  return list.map((s, i) => ({ ...s, overlap: i > 0 && s.pinnedJam != null && s.pinnedJam !== "" && s.start < list[i - 1].end }));
+}
+function uniqueBagian() {
+  const seen = [];
+  for (const s of state.sesi) {
+    const b = (s.bagian || "").trim();
+    if (b && !seen.includes(b)) seen.push(b);
+  }
+  return seen;
+}
+function colorFor(bagian) {
+  if (!(bagian || "").trim()) return "#64748B";
+  const idx = uniqueBagian().indexOf(bagian.trim());
+  return PALETTE[idx % PALETTE.length];
+}
+
+/* ================== RENDER EDITOR ================== */
+function renderEditor() {
+  document.getElementById("judul").value = state.judulAcara;
+  document.getElementById("jam-mulai").value = state.jamMulaiAcara;
+
+  const list = document.getElementById("session-list");
+  const schedule = computeSchedule();
+  const bagianList = uniqueBagian();
+
+  if (state.sesi.length === 0) {
+    list.innerHTML = '<div class="empty">' + icon("note") + '<div style="font-weight:600;font-size:16px;color:var(--text)">Belum ada sesi</div><div style="margin-top:4px">Klik "Tambah Sesi" untuk mulai menyusun rundown.</div></div>';
+  } else {
+    list.innerHTML = schedule.map((s, i) => {
+      const accent = s.isIstirahat ? "#D97706" : colorFor(s.bagian);
+      const pinned = s.pinnedJam != null && s.pinnedJam !== "";
+      const warn = s.overlap ? '<div class="s-warn">' + icon("warn") + "Tumpang-tindih dengan sesi sebelumnya</div>" : "";
+      const pinTitle = pinned ? "Lepas kunci jam mulai" : "Kunci jam mulai (pin)";
+      return (
+        '<article class="s-card' + (pinned ? " pinned" : "") + (s.isIstirahat ? " break-card" : "") + '" data-id="' + s.id + '" style="--accent:' + accent + '">' +
+          '<div class="s-head">' +
+            '<div class="s-time"><small>' + (pinned ? "Di-pin" : "Mulai") + "</small>" + fmtMin(s.start) + "</div>" +
+            '<div class="s-name-wrap">' +
+              '<input class="s-name" data-f="nama" placeholder="Nama sesi (cth: Sambutan)" value="' + esc(s.nama) + '" aria-label="Nama sesi">' +
+              (warn) +
+            "</div>" +
+            '<div class="s-actions">' +
+              '<div class="s-move">' +
+                '<button class="icon-btn" data-a="up" data-i="' + i + '" aria-label="Naikkan sesi" title="Naikkan" ' + (i === 0 ? "disabled" : "") + ">" + icon("up") + "</button>" +
+                '<button class="icon-btn" data-a="down" data-i="' + i + '" aria-label="Turunkan sesi" title="Turunkan" ' + (i === state.sesi.length - 1 ? "disabled" : "") + ">" + icon("down") + "</button>" +
+              "</div>" +
+              '<button class="icon-btn" data-a="pin" data-i="' + i + '" aria-label="' + pinTitle + '" title="' + pinTitle + '" aria-pressed="' + pinned + '">' + icon("pin") + "</button>" +
+              '<button class="icon-btn danger" data-a="del" data-i="' + i + '" aria-label="Hapus sesi" title="Hapus sesi">' + icon("trash") + "</button>" +
+            "</div>" +
+          "</div>" +
+          '<div class="s-body">' +
+            '<div class="field"><label class="s-label" for="b-' + s.id + '">Bagian</label>' +
+              '<input id="b-' + s.id + '" class="input s-bagian" list="bagian-list" data-f="bagian" value="' + esc(s.bagian) + '" placeholder="cth: Pembukaan">' +
+            "</div>" +
+            '<div class="field"><label class="s-label" for="d-' + s.id + '">Durasi</label>' +
+              '<div class="dur-input-wrap"><input id="d-' + s.id + '" class="input dur-input s-dur" type="number" min="0" step="5" data-f="durasi" value="' + s.durasiMenit + '" aria-label="Durasi dalam menit"><span class="dur-unit">menit</span></div>' +
+            "</div>" +
+            '<div class="field" style="justify-content:flex-end">' +
+              '<label class="switch" style="margin-top:auto"><input type="checkbox" class="s-break" data-f="istirahat" ' + (s.isIstirahat ? "checked" : "") + '><span class="switch-track"></span><span class="switch-label">' + icon("coffee") + ' Istirahat</span></label>' +
+            "</div>" +
+          "</div>" +
+          '<div class="s-body" style="padding-top:0">' +
+            '<div class="field"><label class="s-label" for="p-' + s.id + '">PIC / Penanggung jawab</label>' +
+              '<input id="p-' + s.id + '" class="input s-pic" data-f="pic" value="' + esc(s.pic) + '" placeholder="cth: Budi">' +
+            "</div>" +
+            '<div class="field"><label class="s-label" for="j-' + s.id + '">Jam mulai tetap (pin)</label>' +
+              (pinned
+                ? '<input id="j-' + s.id + '" class="input s-pin-jam" type="time" data-f="pinjam" value="' + esc(s.pinnedJam) + '" aria-label="Jam mulai tetap">'
+                : '<div style="color:var(--text-muted);font-size:13.5px;padding:10px 4px">Mengikuti sesi sebelumnya. Klik ikon pin untuk mengunci jam.</div>') +
+            "</div>" +
+          "</div>" +
+          '<div class="s-note-wrap"><label class="s-label" for="n-' + s.id + '">Catatan (opsional)</label>' +
+            '<textarea id="n-' + s.id + '" class="s-note" data-f="catatan" placeholder="cth: Siapkan mikrofon, undang tamu ke panggung...">' + esc(s.catatan) + "</textarea>" +
+          "</div>" +
+        "</article>"
+      );
+    }).join("");
+  }
+
+  let dl = document.getElementById("bagian-list");
+  if (!dl) { dl = document.createElement("datalist"); dl.id = "bagian-list"; document.body.appendChild(dl); }
+  dl.innerHTML = bagianList.map(b => "<option value=\"" + esc(b) + "\">").join("");
+
+  renderSummary(schedule);
+}
+function renderSummary(schedule) {
+  const total = state.sesi.reduce((a, s) => a + (s.durasiMenit || 0), 0);
+  const efektif = state.sesi.filter(s => !s.isIstirahat).reduce((a, s) => a + (s.durasiMenit || 0), 0);
+  const end = schedule.length ? schedule[schedule.length - 1].end : toMin(state.jamMulaiAcara);
+  const h = Math.floor(total / 60), m = total % 60;
+  const jam = document.getElementById("summary");
+  jam.innerHTML =
+    '<div class="stat"><div class="k">Total durasi</div><div class="v">' + (h > 0 ? h + " j " : "") + m + " mnt</div></div>" +
+    '<div class="stat"><div class="k">Waktu efektif (tanpa istirahat)</div><div class="v">' + efektif + " mnt</div></div>" +
+    '<div class="stat"><div class="k">Jam selesai</div><div class="v">' + fmtMin(end) + "</div></div>";
+}
+
+/* ================== RENDER LIVE ================== */
+let liveTimer = null;
+function enterLive() {
+  document.getElementById("editor").hidden = true;
+  document.getElementById("live").hidden = false;
+  document.getElementById("live-judul").textContent = state.judulAcara || "Susunan Acara";
+  updateLive();
+  liveTimer = setInterval(updateLive, 1000);
+}
+function exitLive() {
+  clearInterval(liveTimer);
+  liveTimer = null;
+  document.getElementById("live").hidden = true;
+  document.getElementById("editor").hidden = false;
+  renderEditor();
+}
+function nowClock() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+}
+function updateLive() {
+  document.getElementById("live-clock").textContent = nowClock();
+  const schedule = computeSchedule();
+  const rowsEl = document.getElementById("live-list");
+  const cdEl = document.getElementById("live-countdown");
+  const lblEl = document.getElementById("live-countdown-label");
+  const prog = document.getElementById("live-progress");
+  const bar = document.getElementById("live-progress-bar");
+
+  if (schedule.length === 0) {
+    rowsEl.innerHTML = '<div class="live-end">Belum ada sesi</div>';
+    cdEl.textContent = "--:--";
+    lblEl.textContent = "Susun rundown dulu di editor";
+    prog.hidden = true;
+    return;
+  }
+
+  const now = new Date();
+  let refSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+  const lastEnd = schedule[schedule.length - 1].end;
+  if (lastEnd > 1440 && refSec >= schedule[0].start * 60) refSec += 86400;
+
+  const rows = schedule.map(s => ({
+    ...s,
+    done: s.end * 60 <= refSec,
+    active: s.start * 60 <= refSec && refSec < s.end * 60
+  }));
+  const active = rows.find(r => r.active && !r.isIstirahat);
+  const next = rows.find(r => !r.done && !r.active && !r.isIstirahat);
+
+  rowsEl.innerHTML = rows.map(r => {
+    let cls = "", right = "";
+    const bag = (r.bagian || "").trim();
+    const chip = bag ? '<span class="chip">' + esc(bag) + "</span>" : "";
+    const dur = (r.durasiMenit || 0) + " mnt";
+    if (r.isIstirahat) { right = '<span class="chip amber">' + icon("coffee") + " Istirahat</span>"; }
+    else if (r.active) { cls = " active"; right = '<span class="l-status live">Berlangsung</span>'; }
+    else if (r.done) { cls = " done"; right = '<span class="l-status done">' + icon("check") + " Selesai</span>"; }
+    else if (next && r.id === next.id) { cls = " next"; right = '<span class="l-status next">Berikutnya</span>'; }
+    return (
+      '<div class="l-row' + cls + '">' +
+        '<div class="l-time">' + fmtMin(r.start) + " – " + fmtMin(r.end) + "</div>" +
+        '<div class="l-body"><div class="l-name">' + esc(r.nama || "(Tanpa nama)") + "</div>" +
+          '<div class="l-meta">' + chip + '<span class="chip">' + dur + "</span></div>" +
+        "</div>" +
+        '<div class="l-right">' + right + "</div>" +
+      "</div>"
+    );
+  }).join("");
+
+  if (active) {
+    const remain = active.end * 60 - refSec;
+    cdEl.textContent = fmtDur(remain);
+    lblEl.innerHTML = "<strong>Sisa waktu</strong> — " + esc(active.nama || "(Tanpa nama)");
+    prog.hidden = false;
+    const pct = Math.max(0, Math.min(100, ((refSec - active.start * 60) / (Math.max(1, active.durasiMenit * 60))) * 100));
+    bar.style.width = pct + "%";
+  } else if (next) {
+    const until = next.start * 60 - refSec;
+    cdEl.textContent = fmtDur(until);
+    lblEl.innerHTML = "<strong>Menuju sesi berikutnya</strong> — " + esc(next.nama || "(Tanpa nama)");
+    prog.hidden = true;
+  } else {
+    cdEl.textContent = "Selesai";
+    lblEl.textContent = "Acara telah selesai — semua sesi usai";
+    prog.hidden = true;
+  }
+}
+
+/* ================== TOAST ================== */
+let toastTimer = null;
+function showToast(msg, isError) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast" + (isError ? " error" : "");
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+/* ================== EXPORT / IMPORT ================== */
+function exportJSON() {
+  const slug = (state.judulAcara || "rundown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "rundown";
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = slug + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+  showToast("Rundown berhasil diexport.");
+}
+async function importFile(file) {
+  let text;
+  try { text = await file.text(); } catch (e) { showToast("File tidak bisa dibaca.", true); return; }
+  let data;
+  try { data = JSON.parse(text); } catch (e) { showToast("File bukan JSON yang valid.", true); return; }
+  const res = validateImport(data);
+  if (!res.ok) { showToast(res.msg, true); return; }
+  if (state.sesi.length > 0 && !confirm("Ganti rundown saat ini dengan isi file?")) return;
+  state = res.data;
+  save(true);
+  renderEditor();
+  showToast("Rundown berhasil diimpor.");
+}
+
+/* ================== CETAK / PDF ================== */
+function renderPrint() {
+  const area = document.getElementById("print-area");
+  const schedule = computeSchedule();
+  const tgl = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  let rows;
+  if (schedule.length === 0) {
+    rows = '<tr><td colspan="6" class="p-empty">Belum ada sesi — susun rundown dulu di editor.</td></tr>';
+  } else {
+    rows = schedule.map((s, i) => {
+      const bagian = (s.bagian || "").trim();
+      const brk = s.isIstirahat ? '<span class="p-break">Istirahat</span>' : "";
+      const bagCell = bagian ? '<span>' + esc(bagian) + "</span>" : "";
+      return (
+        '<tr' + (s.isIstirahat ? ' class="p-row-break"' : "") + ">" +
+          '<td class="p-no">' + (i + 1) + "</td>" +
+          '<td class="p-time">' + fmtMin(s.start) + " – " + fmtMin(s.end) + "</td>" +
+          '<td class="p-name">' + esc(s.nama || "(Tanpa nama)") + " " + brk + "</td>" +
+          '<td class="p-dur">' + (s.durasiMenit || 0) + " mnt</td>" +
+          '<td class="p-pic">' + esc(s.pic || "—") + "</td>" +
+          '<td class="p-note">' + (bagCell ? "<strong>" + esc(bagian) + "</strong> — " : "") + esc(s.catatan || "") + "</td>" +
+        "</tr>"
+      );
+    }).join("");
+  }
+  const total = state.sesi.reduce((a, s) => a + (s.durasiMenit || 0), 0);
+  const end = schedule.length ? schedule[schedule.length - 1].end : toMin(state.jamMulaiAcara);
+  area.innerHTML =
+    '<div class="p-title">' + esc(state.judulAcara || "Susunan Acara") + "</div>" +
+    '<div class="p-sub">Jam mulai: <strong>' + esc(state.jamMulaiAcara) + "</strong> · Dicetak: " + tgl + "</div>" +
+    "<table>" +
+      "<thead><tr><th>No</th><th>Waktu</th><th>Sesi</th><th>Durasi</th><th>PIC</th><th>Catatan</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody>" +
+    "</table>" +
+    '<div class="p-footer">Total durasi: <strong>' + (Math.floor(total / 60) > 0 ? Math.floor(total / 60) + " j " : "") + (total % 60) + " mnt</strong> · Jam selesai: <strong>" + fmtMin(end) + "</strong></div>";
+}
+document.getElementById("btn-print").addEventListener("click", () => { renderPrint(); window.print(); });
+window.addEventListener("beforeprint", renderPrint);
+
+document.getElementById("judul").addEventListener("input", e => { state.judulAcara = e.target.value; save(); });
+document.getElementById("jam-mulai").addEventListener("input", e => {
+  state.jamMulaiAcara = e.target.value;
+  save();
+  renderEditor();
+});
+document.getElementById("btn-add").addEventListener("click", () => {
+  state.sesi.push({ id: uid(), nama: "", durasiMenit: 10, pic: "", catatan: "", bagian: uniqueBagian()[0] || "", isIstirahat: false, pinnedJam: null });
+  save(); renderEditor();
+  const last = document.querySelector("#session-list .s-card:last-child .s-name");
+  if (last) last.focus();
+});
+document.getElementById("btn-export").addEventListener("click", exportJSON);
+document.getElementById("btn-import").addEventListener("click", () => document.getElementById("file-input").click());
+document.getElementById("file-input").addEventListener("change", e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ""; });
+document.getElementById("btn-live").addEventListener("click", enterLive);
+document.getElementById("btn-back").addEventListener("click", exitLive);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !document.getElementById("live").hidden) exitLive();
+});
+
+document.getElementById("session-list").addEventListener("click", e => {
+  const btn = e.target.closest("[data-a]");
+  if (!btn) return;
+  const i = Number(btn.dataset.i);
+  const s = state.sesi[i];
+  if (!s) return;
+  const a = btn.dataset.a;
+  if (a === "up") { if (i > 0) { [state.sesi[i - 1], state.sesi[i]] = [state.sesi[i], state.sesi[i - 1]]; } }
+  else if (a === "down") { if (i < state.sesi.length - 1) { [state.sesi[i + 1], state.sesi[i]] = [state.sesi[i], state.sesi[i + 1]]; } }
+  else if (a === "del") {
+    if (!confirm("Hapus sesi \"" + (s.nama || "(Tanpa nama)") + "\"?")) return;
+    state.sesi.splice(i, 1);
+  }
+  else if (a === "pin") {
+    if (s.pinnedJam != null && s.pinnedJam !== "") s.pinnedJam = null;
+    else s.pinnedJam = fmtMin(computeSchedule()[i].start);
+  }
+  save(); renderEditor();
+});
+
+document.getElementById("session-list").addEventListener("input", e => {
+  const t = e.target;
+  if (!t.dataset || !t.dataset.f) return;
+  const card = t.closest(".s-card");
+  if (!card) return;
+  const i = state.sesi.findIndex(x => x.id === card.dataset.id);
+  if (i < 0) return;
+  const f = t.dataset.f;
+  if (f === "nama") state.sesi[i].nama = t.value;
+  else if (f === "bagian") state.sesi[i].bagian = t.value;
+  else if (f === "pic") state.sesi[i].pic = t.value;
+  else if (f === "catatan") state.sesi[i].catatan = t.value;
+  else if (f === "durasi") state.sesi[i].durasiMenit = Math.max(0, Math.floor(Number(t.value) || 0));
+  else if (f === "pinjam") { if (t.value === "") state.sesi[i].pinnedJam = null; else if (validHM(t.value)) state.sesi[i].pinnedJam = t.value; }
+  save();
+});
+
+document.getElementById("session-list").addEventListener("change", e => {
+  const t = e.target;
+  const card = t.closest ? t.closest(".s-card") : null;
+  if (!card) return;
+  const i = state.sesi.findIndex(x => x.id === card.dataset.id);
+  if (i < 0) return;
+  if (t.dataset && t.dataset.f === "istirahat") {
+    state.sesi[i].isIstirahat = t.checked;
+    save();
+  }
+  renderEditor();
+});
+
+/* ================== PWA / INSTALL / FULLSCREEN ================== */
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById("btn-install").hidden = false;
+});
+document.getElementById("btn-install").addEventListener("click", async () => {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  await deferredInstall.userChoice;
+  deferredInstall = null;
+  document.getElementById("btn-install").hidden = true;
+});
+window.addEventListener("appinstalled", () => {
+  document.getElementById("btn-install").hidden = true;
+  showToast("Aplikasi berhasil dipasang.");
+});
+
+const fsBtn = document.getElementById("btn-fs");
+function syncFsUi() {
+  const active = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  document.querySelector(".ic-fs-max").hidden = active;
+  document.querySelector(".ic-fs-min").hidden = !active;
+  document.getElementById("fs-label").textContent = active ? "Keluar Layar Penuh" : "Layar Penuh";
+}
+fsBtn.addEventListener("click", async () => {
+  const el = document.documentElement;
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    try {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      await req.call(el);
+    } catch (err) {
+      showToast("Layar penuh tidak tersedia di browser/iframe ini.", true);
+    }
+  }
+});
+document.addEventListener("fullscreenchange", syncFsUi);
+document.addEventListener("webkitfullscreenchange", syncFsUi);
+
+// Service worker: aktif hanya saat disajikan via http(s) (localhost / host), bukan file://
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => { /* abai: mis. preview offline */ });
+  });
+}
+
+/* ================== INIT ================== */
+renderEditor();
+save(true);
+
+// Buka langsung dalam mode tampil jika URL memuat ?tampil (berguna sebagai bookmark proyektor)
+if (new URLSearchParams(location.search).has("tampil")) {
+  enterLive();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Metadata agen / editor
+.freebuff/
+
+# Cache Python
+__pycache__/
+*.pyc
