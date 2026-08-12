@@ -2,6 +2,8 @@
 
 Aplikasi web untuk **membuat dan mengatur susunan acara** berdasarkan waktu — editor rundown dengan jam otomatis, mode tampil live untuk proyektor, export/import JSON, dan cetak/PDF. Berupa **PWA**: bisa di-install di HP dengan ikon sendiri dan berjalan layar penuh (bahkan offline).
 
+**Coba langsung:** [https://rianarukmawan-hue.github.io/rundown-acara/](https://rianarukmawan-hue.github.io/rundown-acara/) — versi live aplikasi ini (GitHub Pages).
+
 ## Cuplikan
 
 | Mode editor | Mode tampil (live) | Editor di HP |
@@ -22,6 +24,8 @@ Aplikasi web untuk **membuat dan mengatur susunan acara** berdasarkan waktu — 
 4. Pada **Build and deployment**, pilih *Deploy from a branch* → branch `main` → folder `/ (root)` → **Save**.
 5. Tunggu 1–2 menit, lalu buka alamatnya: `https://<username>.github.io/<nama-repo>/`
    (Semua path di aplikasi relatif, jadi aman berada di sub-folder seperti ini.)
+
+**Contoh terpasang:** aplikasi ini sendiri live di [https://rianarukmawan-hue.github.io/rundown-acara/](https://rianarukmawan-hue.github.io/rundown-acara/) — di-deploy dari branch `master`, folder `/ (root)`.
 
 ## Hosting di Netlify (paling cepat)
 
