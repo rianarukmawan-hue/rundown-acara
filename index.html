@@ -205,6 +205,50 @@
   }
   .empty .ic{width:34px;height:34px;margin:0 auto 10px;color:var(--secondary)}
 
+  /* ============ VIEW SWITCH & TIMELINE ============ */
+  .view-switch{
+    display:inline-flex;gap:2px;background:var(--surface);border:1px solid var(--line);
+    border-radius:10px;padding:3px;margin-bottom:14px;box-shadow:var(--shadow-sm);
+  }
+  .view-btn{padding:7px 18px;border-radius:8px;font-weight:600;font-size:14px;color:var(--text-muted);transition:background-color .18s,color .18s}
+  .view-btn:hover{color:var(--primary)}
+  .view-btn.active{background:var(--primary);color:#fff}
+  #timeline-view{overflow-x:auto;padding-bottom:10px}
+  .t-axis-row{display:flex;align-items:flex-end;gap:10px;margin-bottom:6px}
+  .t-label-space{flex:none;width:180px}
+  .t-axis{position:relative;height:22px}
+  .t-tick{
+    position:absolute;top:0;transform:translateX(-50%);font-size:11px;font-weight:600;
+    color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .t-now{position:absolute;top:0;bottom:-6px;width:2px;background:var(--danger);z-index:3}
+  .t-now::after{content:"";position:absolute;top:-2px;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--danger)}
+  .t-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .t-label{flex:none;width:180px;min-width:180px;padding:4px 2px}
+  .t-name{font-weight:700;font-size:13.5px;line-height:1.25;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .t-name .ic{width:13px;height:13px}
+  .t-pin-chip{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:var(--cta-strong);background:var(--cta-soft);border-radius:99px;padding:1px 7px}
+  .t-time{font-size:12px;color:var(--text-muted);font-variant-numeric:tabular-nums;margin-top:1px}
+  .t-warn{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--cta-strong);margin-top:2px}
+  .t-warn .ic{width:13px;height:13px}
+  .t-track{position:relative;height:36px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.55);overflow:hidden}
+  .t-grid{position:absolute;inset:0;pointer-events:none}
+  .t-bar{
+    position:absolute;top:6px;bottom:6px;border-radius:6px;display:flex;align-items:center;
+    padding:0 10px;color:#fff;font-size:12px;font-weight:700;overflow:hidden;white-space:nowrap;
+    cursor:grab;touch-action:none;box-shadow:var(--shadow-sm);
+  }
+  .t-bar:active{cursor:grabbing}
+  .t-bar.pinned{outline:2px solid rgba(249,115,22,.65);outline-offset:1px}
+  .t-bar-label{pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+  .t-handle{position:absolute;top:0;bottom:0;width:9px;cursor:ew-resize;touch-action:none;z-index:2}
+  .t-handle::after{content:"";position:absolute;top:20%;bottom:20%;left:50%;width:2px;margin-left:-1px;border-radius:2px;background:rgba(255,255,255,.55)}
+  .t-handle:hover::after,.t-handle:active::after{background:#fff}
+  .t-left{left:0}
+  .t-right{right:0}
+  .t-hint{font-size:12.5px;color:var(--text-muted);margin-top:10px}
+  body.dragging{user-select:none;cursor:grabbing}
+
   /* toast */
   .toast{
     position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
@@ -272,6 +316,32 @@
   .l-status.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
   .l-status.done{background:rgba(16,185,129,.16);color:#9CE8CE}
   .live-end{text-align:center;font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,8vw,72px);letter-spacing:.06em;color:#FDE68A;margin-top:30px}
+
+  /* ============ PRESENTER (PROYEKTOR) ============ */
+  .pres-stage{max-width:1100px;margin:22px auto 0;display:grid;grid-template-columns:2.2fr 1fr;gap:16px;align-items:stretch}
+  .pres-card{border-radius:22px;padding:28px 32px}
+  .pres-now{
+    background:linear-gradient(135deg,rgba(124,58,237,.30),rgba(168,85,247,.12));
+    border:1px solid rgba(167,139,250,.55);box-shadow:0 18px 60px -18px rgba(124,58,237,.6);
+  }
+  .pres-next{background:rgba(255,255,255,.05);border:1px solid rgba(249,115,22,.45);display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .pres-tag{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:99px;width:fit-content}
+  .pres-tag.live{background:#8B5CF6;color:#fff}
+  .pres-tag.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
+  .pres-tag.amber{background:rgba(245,158,11,.2);border:2px solid rgba(245,158,11,.5);color:#FCD9A0}
+  .pres-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,6.5vw,80px);line-height:1.02;color:#fff;margin-top:10px;overflow-wrap:anywhere}
+  .pres-sub{font-size:clamp(15px,2vw,19px);color:#C9B8F2;margin-top:8px}
+  .pres-count{
+    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(70px,11vw,128px);line-height:1;
+    margin-top:14px;background:linear-gradient(180deg,#FDBA74,#F97316);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;text-fill-color:transparent;filter:drop-shadow(0 6px 26px rgba(249,115,22,.35));
+    font-variant-numeric:tabular-nums;
+  }
+  .pres-count-label{font-size:clamp(15px,2vw,20px);font-weight:600;color:#C9B8F2;margin-top:4px}
+  .pres-next-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(26px,3.6vw,44px);color:#EDE4FF;line-height:1.05}
+  .pres-next-time{font-size:clamp(14px,1.6vw,18px);color:#C9B8F2}
+  .pres-next-in{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,5vw,58px);color:#FDBA74;margin-top:4px}
+  @media (max-width:800px){.pres-stage{grid-template-columns:1fr}}
 
   @media (max-width:600px){
     body{font-size:15.5px}
@@ -361,6 +431,10 @@
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="m10 8 5 2.5-5 2.5z"/><path d="M8 21h8M12 17v4"/></svg>
         Mode Tampil
       </button>
+      <button id="btn-presenter" class="btn btn-ghost" title="Mode presenter: kartu besar untuk proyektor">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Presenter
+      </button>
       <button id="btn-install" class="btn btn-ghost" hidden title="Pasang aplikasi ke layar utama HP">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
         Pasang
@@ -373,7 +447,13 @@
     <input id="judul" class="input title-input" placeholder="cth: Rapat Kerja Tahunan 2026">
   </section>
 
+  <div class="view-switch" role="tablist" aria-label="Tampilan daftar sesi">
+    <button id="view-list" class="view-btn active" role="tab" aria-selected="true">Daftar</button>
+    <button id="view-timeline" class="view-btn" role="tab" aria-selected="false">Timeline</button>
+  </div>
+
   <section id="session-list" class="session-list" aria-label="Daftar sesi"></section>
+  <div id="timeline-view" hidden></div>
 
   <button id="btn-add" class="btn-add">
     <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -390,10 +470,10 @@
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M5 12h14"/></svg>
         Kembali ke Editor
       </button>
-      <button id="btn-fs" class="btn btn-ghost dark" title="Layar penuh">
+      <button class="btn btn-ghost dark fs-toggle" title="Layar penuh">
         <svg class="ic ic-fs-max" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
         <svg class="ic ic-fs-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
-        <span id="fs-label">Layar Penuh</span>
+        <span class="fs-label">Layar Penuh</span>
       </button>
     </div>
     <div class="live-clock" id="live-clock" aria-live="off"></div>
@@ -405,6 +485,44 @@
     <div class="live-progress" id="live-progress" hidden><div class="live-progress-bar" id="live-progress-bar"></div></div>
   </div>
   <div class="live-list" id="live-list" aria-label="Rundown berjalan"></div>
+</main>
+
+<main id="presenter" class="live" hidden>
+  <div class="live-top">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="btn-back2" class="btn btn-ghost dark">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M5 12h14"/></svg>
+        Kembali ke Editor
+      </button>
+      <button class="btn btn-ghost dark fs-toggle" title="Layar penuh">
+        <svg class="ic ic-fs-max" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        <svg class="ic ic-fs-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+        <span class="fs-label">Layar Penuh</span>
+      </button>
+      <button id="btn-chime" class="btn btn-ghost dark" aria-pressed="true" title="Chime saat sesi berganti"></button>
+    </div>
+    <div class="live-clock" id="pres-clock" aria-live="off"></div>
+  </div>
+  <div class="live-hero">
+    <h1 class="live-judul" id="pres-judul"></h1>
+  </div>
+  <div class="pres-stage">
+    <section class="pres-card pres-now" aria-live="polite">
+      <span class="pres-tag live" id="pres-tag">Berlangsung</span>
+      <div class="pres-name" id="pres-name">—</div>
+      <div class="pres-sub" id="pres-sub"></div>
+      <div class="pres-count" id="pres-count">--:--</div>
+      <div class="pres-count-label" id="pres-count-label">Sisa waktu</div>
+      <div class="live-progress" id="pres-progress" hidden><div class="live-progress-bar" id="pres-bar"></div></div>
+    </section>
+    <section class="pres-card pres-next" id="pres-next-card" hidden>
+      <span class="pres-tag next">Berikutnya</span>
+      <div class="pres-next-name" id="pres-next-name">—</div>
+      <div class="pres-next-time" id="pres-next-time"></div>
+      <div class="pres-next-in" id="pres-next-in"></div>
+    </section>
+  </div>
+  <div class="live-list" id="pres-list" aria-label="Rundown berjalan"></div>
 </main>
 
 <div class="toast" id="toast" hidden></div>
@@ -426,6 +544,9 @@ function icon(name, cls) {
     down: '<path d="m6 9 6 6 6-6"/>',
     chevRight: '<path d="m9 18 6-6-6-6"/>',
     chevDown: '<path d="m6 9 6 6 6-6"/>',
+    presenter: '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    volume: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>',
+    volX: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/>',
     trash: '<path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/>',
     pin: '<path d="M12 17v5"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>',
     coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
@@ -548,14 +669,27 @@ function renderEditor() {
   document.getElementById("judul").value = state.judulAcara;
   document.getElementById("jam-mulai").value = state.jamMulaiAcara;
 
+  document.getElementById("view-list").classList.toggle("active", viewMode === "list");
+  document.getElementById("view-timeline").classList.toggle("active", viewMode === "timeline");
+  document.getElementById("view-list").setAttribute("aria-selected", viewMode === "list");
+  document.getElementById("view-timeline").setAttribute("aria-selected", viewMode === "timeline");
+
   const list = document.getElementById("session-list");
+  const tlEl = document.getElementById("timeline-view");
   const schedule = computeSchedule();
   const bagianList = uniqueBagian();
 
-  if (state.sesi.length === 0) {
-    list.innerHTML = '<div class="empty">' + icon("note") + '<div style="font-weight:600;font-size:16px;color:var(--text)">Belum ada sesi</div><div style="margin-top:4px">Klik "Tambah Sesi" untuk mulai menyusun rundown.</div></div>';
+  if (viewMode === "timeline") {
+    list.hidden = true;
+    tlEl.hidden = false;
+    renderTimeline();
   } else {
-    list.innerHTML = schedule.map((s, i) => {
+    tlEl.hidden = true;
+    list.hidden = false;
+    if (state.sesi.length === 0) {
+      list.innerHTML = '<div class="empty">' + icon("note") + '<div style="font-weight:600;font-size:16px;color:var(--text)">Belum ada sesi</div><div style="margin-top:4px">Klik "Tambah Sesi" untuk mulai menyusun rundown.</div></div>';
+    } else {
+      list.innerHTML = schedule.map((s, i) => {
       const accent = s.isIstirahat ? "#D97706" : colorFor(s.bagian);
       const pinned = s.pinnedJam != null && s.pinnedJam !== "";
       const warn = s.overlap ? '<div class="s-warn">' + icon("warn") + "Tumpang-tindih dengan sesi sebelumnya</div>" : "";
@@ -614,7 +748,8 @@ function renderEditor() {
           "</div>" +
         "</article>"
       );
-    }).join("");
+      }).join("");
+    }
   }
 
   let dl = document.getElementById("bagian-list");
@@ -635,10 +770,169 @@ function renderSummary(schedule) {
     '<div class="stat"><div class="k">Jam selesai</div><div class="v">' + fmtMin(end) + "</div></div>";
 }
 
+/* ================== TIMELINE (GANTT) ================== */
+let viewMode = "list";
+let tlStart = 0, tlPpm = 6;
+let drag = null;
+
+function setView(mode) {
+  viewMode = mode;
+  renderEditor();
+}
+
+function renderTimeline() {
+  const el = document.getElementById("timeline-view");
+  const schedule = computeSchedule();
+  if (schedule.length === 0) {
+    el.innerHTML = '<div class="empty">' + icon("note") + '<div style="font-weight:600;font-size:16px;color:var(--text)">Belum ada sesi</div><div style="margin-top:4px">Klik "Tambah Sesi" untuk mulai menyusun rundown.</div></div>';
+    return;
+  }
+  const lastEnd = schedule[schedule.length - 1].end;
+  tlStart = Math.floor(schedule[0].start / 5) * 5;
+  const tlEnd = Math.max(lastEnd + 5, tlStart + 60);
+  const span = tlEnd - tlStart;
+  tlPpm = Math.max(2.5, Math.min(8, 1500 / span));
+  const trackW = Math.round(span * tlPpm) + 12;
+  const step = span <= 360 ? 30 : span <= 720 ? 60 : 120;
+  const stepPx = step * tlPpm;
+
+  let ticks = "";
+  for (let t = tlStart; t <= tlEnd; t += step) {
+    ticks += '<span class="t-tick" style="left:' + Math.round((t - tlStart) * tlPpm) + 'px">' + fmtMin(t) + "</span>";
+  }
+  const nowMin = (new Date().getHours() * 60) + new Date().getMinutes();
+  const nowLine = (nowMin >= tlStart && nowMin <= tlEnd)
+    ? '<span class="t-now" title="Sekarang" style="left:' + Math.round((nowMin - tlStart) * tlPpm) + 'px"></span>'
+    : "";
+
+  const rows = schedule.map((s, i) => {
+    const x = Math.round((s.start - tlStart) * tlPpm);
+    const w = Math.max(10, Math.round((s.end - s.start) * tlPpm));
+    const accent = s.isIstirahat ? "#D97706" : colorFor(s.bagian);
+    const pinned = s.pinnedJam != null && s.pinnedJam !== "";
+    const name = esc(s.nama || "(Tanpa nama)");
+    const short = name.length > 20 ? name.slice(0, 20) + "…" : name;
+    const warn = s.overlap ? '<div class="t-warn">' + icon("warn") + "Tumpang-tindih</div>" : "";
+    return (
+      '<div class="t-row" data-i="' + i + '">' +
+        '<div class="t-label">' +
+          '<div class="t-name">' + name + (pinned ? '<span class="t-pin-chip">' + icon("pin") + " pin</span>" : "") + "</div>" +
+          '<div class="t-time">' + fmtMin(s.start) + " – " + fmtMin(s.end) + "</div>" +
+          warn +
+        "</div>" +
+        '<div class="t-track" style="width:' + trackW + 'px">' +
+          '<div class="t-grid" style="background-image:repeating-linear-gradient(to right, transparent 0, transparent ' + (stepPx - 1) + 'px, rgba(124,58,237,.14) ' + (stepPx - 1) + 'px, rgba(124,58,237,.14) ' + stepPx + 'px)"></div>' +
+          '<div class="t-bar' + (pinned ? " pinned" : "") + '" data-i="' + i + '" style="left:' + x + "px;width:" + w + "px;background:" + accent + '" title="' + name + " — " + fmtMin(s.start) + " – " + fmtMin(s.end) + '">' +
+            (w >= 78 ? '<span class="t-bar-label">' + short + "</span>" : "") +
+            '<span class="t-handle t-left" role="slider" aria-label="Ubah jam mulai sesi"></span>' +
+            '<span class="t-handle t-right" role="slider" aria-label="Ubah durasi sesi"></span>' +
+          "</div>" +
+        "</div>" +
+      "</div>"
+    );
+  }).join("");
+
+  el.innerHTML =
+    '<div class="t-axis-row">' +
+      '<div class="t-label-space"></div>' +
+      '<div class="t-axis" style="width:' + trackW + 'px">' + ticks + nowLine + "</div>" +
+    "</div>" +
+    rows +
+    '<div class="t-hint">Tip: seret <strong>tepi kanan</strong> bar untuk mengubah durasi, <strong>tepi kiri</strong> untuk menggeser jam mulai (ujung tetap), atau <strong>badan bar</strong> untuk memindahkan sesi (otomatis mengunci jam mulai). Sesi ter-pin tidak ikut bergeser.</div>';
+}
+
+function tPointerDown(e) {
+  if (e.button !== 0) return;
+  const bar = e.target.closest(".t-bar");
+  if (!bar) return;
+  const i = Number(bar.dataset.i);
+  const schedule = computeSchedule();
+  const s = schedule[i];
+  if (!s) return;
+  const cls = e.target.classList;
+  drag = {
+    i: i,
+    mode: cls.contains("t-right") ? "resize" : cls.contains("t-left") ? "resizeL" : "move",
+    startX: e.clientX,
+    origStart: s.start,
+    origDur: s.durasiMenit,
+    moved: false
+  };
+  try { bar.setPointerCapture(e.pointerId); } catch (err) { /* event sintetis */ }
+  document.body.classList.add("dragging");
+  e.preventDefault();
+}
+
+function tPointerMove(e) {
+  if (!drag) return;
+  const deltaMin = (e.clientX - drag.startX) / tlPpm;
+  let newStart = drag.origStart;
+  let newDur = drag.origDur;
+  if (drag.mode === "resize") {
+    newDur = Math.max(1, Math.round(drag.origDur + deltaMin));
+  } else if (drag.mode === "resizeL") {
+    newStart = Math.max(0, Math.min(drag.origStart + drag.origDur - 1, drag.origStart + Math.round(deltaMin)));
+    newDur = (drag.origStart + drag.origDur) - newStart;
+  } else {
+    newStart = Math.max(0, Math.min(1439, Math.round(drag.origStart + deltaMin)));
+  }
+  if (newStart !== drag.origStart || newDur !== drag.origDur) drag.moved = true;
+  drag.newStart = newStart;
+  drag.newDur = newDur;
+  previewTail(drag.i, newStart, newDur);
+}
+
+function previewTail(i, newStart, newDur) {
+  const entries = [{ start: newStart, end: newStart + newDur }];
+  let cursor = newStart + newDur;
+  for (let k = i + 1; k < state.sesi.length; k++) {
+    const sk = state.sesi[k];
+    const st = (sk.pinnedJam != null && sk.pinnedJam !== "") ? toMin(sk.pinnedJam) : cursor;
+    const en = st + (sk.durasiMenit || 0);
+    entries.push({ start: st, end: en });
+    cursor = en;
+  }
+  entries.forEach((en, j) => {
+    const row = document.querySelector('.t-row[data-i="' + (i + j) + '"]');
+    if (!row) return;
+    const bar = row.querySelector(".t-bar");
+    bar.style.left = Math.round((en.start - tlStart) * tlPpm) + "px";
+    bar.style.width = Math.max(10, Math.round((en.end - en.start) * tlPpm)) + "px";
+    const tEl = row.querySelector(".t-time");
+    if (tEl) tEl.textContent = fmtMin(en.start) + " – " + fmtMin(en.end);
+  });
+}
+
+function tPointerUp() {
+  if (!drag) return;
+  const s = state.sesi[drag.i];
+  if (drag.moved) {
+    if (drag.mode === "resize") s.durasiMenit = drag.newDur;
+    else if (drag.mode === "resizeL") { s.pinnedJam = fmtMin(drag.newStart); s.durasiMenit = drag.newDur; }
+    else s.pinnedJam = fmtMin(drag.newStart);
+    save();
+  }
+  drag = null;
+  document.body.classList.remove("dragging");
+  renderEditor();
+}
+
+document.getElementById("view-list").addEventListener("click", () => setView("list"));
+document.getElementById("view-timeline").addEventListener("click", () => setView("timeline"));
+const timelineEl = document.getElementById("timeline-view");
+timelineEl.addEventListener("pointerdown", tPointerDown);
+window.addEventListener("pointermove", tPointerMove);
+window.addEventListener("pointerup", tPointerUp);
+window.addEventListener("pointercancel", tPointerUp);
+
 /* ================== RENDER LIVE ================== */
 let liveTimer = null;
 function enterLive() {
+  clearInterval(presenterTimer); presenterTimer = null;
+  lastActiveId = null;
+  lastPrepRemain = null;
   document.getElementById("editor").hidden = true;
+  document.getElementById("presenter").hidden = true;
   document.getElementById("live").hidden = false;
   document.getElementById("live-judul").textContent = state.judulAcara || "Susunan Acara";
   updateLive();
@@ -656,6 +950,39 @@ function nowClock() {
   const p = n => String(n).padStart(2, "0");
   return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
 }
+function resolveRefSec(schedule, refSec) {
+  // Acara bisa melewati tengah malam (mulai 23:00, selesai 01:00).
+  // Coba dua interpretasi hari dan pilih yang punya sesi aktif; jika tidak ada,
+  // pakai interpretasi lebih awal (acara selesai / belum mulai).
+  const cand = [refSec, refSec + 86400];
+  for (const r of cand) {
+    if (schedule.some(s => s.start * 60 <= r && r < s.end * 60)) return r;
+  }
+  return refSec;
+}
+
+function buildRowsHtml(rows, next) {
+  return rows.map(r => {
+    let cls = "", right = "";
+    const bag = (r.bagian || "").trim();
+    const chip = bag ? '<span class="chip">' + esc(bag) + "</span>" : "";
+    const dur = (r.durasiMenit || 0) + " mnt";
+    if (r.isIstirahat) { right = '<span class="chip amber">' + icon("coffee") + " Istirahat</span>"; }
+    else if (r.active) { cls = " active"; right = '<span class="l-status live">Berlangsung</span>'; }
+    else if (r.done) { cls = " done"; right = '<span class="l-status done">' + icon("check") + " Selesai</span>"; }
+    else if (next && r.id === next.id) { cls = " next"; right = '<span class="l-status next">Berikutnya</span>'; }
+    return (
+      '<div class="l-row' + cls + '">' +
+        '<div class="l-time">' + fmtMin(r.start) + " – " + fmtMin(r.end) + "</div>" +
+        '<div class="l-body"><div class="l-name">' + esc(r.nama || "(Tanpa nama)") + "</div>" +
+          '<div class="l-meta">' + chip + '<span class="chip">' + dur + "</span></div>" +
+        "</div>" +
+        '<div class="l-right">' + right + "</div>" +
+      "</div>"
+    );
+  }).join("");
+}
+
 function updateLive() {
   document.getElementById("live-clock").textContent = nowClock();
   const schedule = computeSchedule();
@@ -675,8 +1002,7 @@ function updateLive() {
 
   const now = new Date();
   let refSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-  const lastEnd = schedule[schedule.length - 1].end;
-  if (lastEnd > 1440 && refSec >= schedule[0].start * 60) refSec += 86400;
+  refSec = resolveRefSec(schedule, refSec);
 
   const rows = schedule.map(s => ({
     ...s,
@@ -686,25 +1012,7 @@ function updateLive() {
   const active = rows.find(r => r.active && !r.isIstirahat);
   const next = rows.find(r => !r.done && !r.active && !r.isIstirahat);
 
-  rowsEl.innerHTML = rows.map(r => {
-    let cls = "", right = "";
-    const bag = (r.bagian || "").trim();
-    const chip = bag ? '<span class="chip">' + esc(bag) + "</span>" : "";
-    const dur = (r.durasiMenit || 0) + " mnt";
-    if (r.isIstirahat) { right = '<span class="chip amber">' + icon("coffee") + " Istirahat</span>"; }
-    else if (r.active) { cls = " active"; right = '<span class="l-status live">Berlangsung</span>'; }
-    else if (r.done) { cls = " done"; right = '<span class="l-status done">' + icon("check") + " Selesai</span>"; }
-    else if (next && r.id === next.id) { cls = " next"; right = '<span class="l-status next">Berikutnya</span>'; }
-    return (
-      '<div class="l-row' + cls + '">' +
-        '<div class="l-time">' + fmtMin(r.start) + " – " + fmtMin(r.end) + "</div>" +
-        '<div class="l-body"><div class="l-name">' + esc(r.nama || "(Tanpa nama)") + "</div>" +
-          '<div class="l-meta">' + chip + '<span class="chip">' + dur + "</span></div>" +
-        "</div>" +
-        '<div class="l-right">' + right + "</div>" +
-      "</div>"
-    );
-  }).join("");
+  rowsEl.innerHTML = buildRowsHtml(rows, next);
 
   if (active) {
     const remain = active.end * 60 - refSec;
@@ -724,6 +1032,170 @@ function updateLive() {
     prog.hidden = true;
   }
 }
+
+/* ================== PRESENTER (PROYEKTOR) ================== */
+let presenterTimer = null;
+let lastActiveId = null;
+let lastPrepRemain = null;
+let chimeOn = localStorage.getItem("rundownChime") !== "0";
+let audioCtx = null;
+
+function ensureAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+function chime(kind) {
+  if (!chimeOn) return;
+  try {
+    ensureAudio();
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    const notes = kind === "start" ? [659.25, 880.0] : [880.0];
+    notes.forEach((f, idx) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      o.frequency.value = f;
+      const t = t0 + idx * 0.22;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.22, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start(t);
+      o.stop(t + 1.2);
+    });
+  } catch (e) { /* audio diblokir browser */ }
+}
+function syncChimeUi() {
+  const b = document.getElementById("btn-chime");
+  if (!b) return;
+  b.setAttribute("aria-pressed", chimeOn);
+  b.innerHTML = (chimeOn ? icon("volume") : icon("volX")) + "<span>Chime " + (chimeOn ? "Nyala" : "Mati") + "</span>";
+}
+document.getElementById("btn-chime").addEventListener("click", () => {
+  chimeOn = !chimeOn;
+  localStorage.setItem("rundownChime", chimeOn ? "1" : "0");
+  syncChimeUi();
+  if (chimeOn) ensureAudio();
+});
+
+function enterPresenter() {
+  clearInterval(liveTimer); liveTimer = null;
+  clearInterval(presenterTimer); presenterTimer = null;
+  lastActiveId = null;
+  lastPrepRemain = null;
+  document.getElementById("editor").hidden = true;
+  document.getElementById("live").hidden = true;
+  document.getElementById("presenter").hidden = false;
+  document.getElementById("pres-judul").textContent = state.judulAcara || "Susunan Acara";
+  ensureAudio();  // pemicu dari klik → audio siap berbunyi
+  updatePresenter();
+  presenterTimer = setInterval(updatePresenter, 1000);
+  syncFsUi();
+  syncChimeUi();
+}
+function exitPresenter() {
+  clearInterval(presenterTimer); presenterTimer = null;
+  document.getElementById("presenter").hidden = true;
+  document.getElementById("editor").hidden = false;
+  renderEditor();
+}
+
+function updatePresenter() {
+  document.getElementById("pres-clock").textContent = nowClock();
+  const schedule = computeSchedule();
+  const listEl = document.getElementById("pres-list");
+  const tagEl = document.getElementById("pres-tag");
+  const nameEl = document.getElementById("pres-name");
+  const subEl = document.getElementById("pres-sub");
+  const cntEl = document.getElementById("pres-count");
+  const lblEl = document.getElementById("pres-count-label");
+  const prog = document.getElementById("pres-progress");
+  const bar = document.getElementById("pres-bar");
+  const nextCard = document.getElementById("pres-next-card");
+
+  if (schedule.length === 0) {
+    listEl.innerHTML = "";
+    tagEl.textContent = "Kosong";
+    tagEl.className = "pres-tag live";
+    nameEl.textContent = "Belum ada sesi";
+    subEl.textContent = "Susun rundown dulu di editor";
+    cntEl.textContent = "--:--";
+    lblEl.textContent = "";
+    prog.hidden = true;
+    nextCard.hidden = true;
+    return;
+  }
+  const now = new Date();
+  let refSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+  refSec = resolveRefSec(schedule, refSec);
+
+  const rows = schedule.map(s => ({ ...s, done: s.end * 60 <= refSec, active: s.start * 60 <= refSec && refSec < s.end * 60 }));
+  const active = rows.find(r => r.active);
+  const next = rows.find(r => !r.done && !r.active && !r.isIstirahat);
+
+  // Chime: saat sesi berganti, dan H-1 menit sebelum sesi berikutnya
+  if (active && active.id !== lastActiveId) {
+    if (lastActiveId !== null) chime("start");
+    lastActiveId = active.id;
+  } else if (!active) {
+    lastActiveId = null;
+  }
+  if (next) {
+    const remain = next.start * 60 - refSec;
+    if (lastPrepRemain !== null && lastPrepRemain > 60 && remain <= 60 && remain > 0) chime("prep");
+    lastPrepRemain = remain;
+  } else {
+    lastPrepRemain = null;
+  }
+
+  listEl.innerHTML = buildRowsHtml(rows, next);
+
+  if (active) {
+    const remain = active.end * 60 - refSec;
+    tagEl.textContent = active.isIstirahat ? "Istirahat" : "Berlangsung";
+    tagEl.className = "pres-tag " + (active.isIstirahat ? "amber" : "live");
+    nameEl.textContent = active.nama || "(Tanpa nama)";
+    subEl.textContent = [active.pic, active.catatan].filter(Boolean).join(" · ") || (active.isIstirahat ? "Makan & melepas lelah" : "");
+    cntEl.textContent = fmtDur(remain);
+    lblEl.textContent = active.isIstirahat ? "Istirahat berakhir dalam" : "Sisa waktu";
+    prog.hidden = false;
+    bar.style.width = Math.max(0, Math.min(100, ((refSec - active.start * 60) / (Math.max(1, active.durasiMenit * 60))) * 100)) + "%";
+  } else if (next) {
+    const until = next.start * 60 - refSec;
+    const notStarted = refSec < schedule[0].start * 60;
+    tagEl.textContent = notStarted ? "Menunggu" : "Sesi berikutnya";
+    tagEl.className = "pres-tag next";
+    nameEl.textContent = next.nama || "(Tanpa nama)";
+    subEl.textContent = "Mulai " + fmtMin(next.start) + " · " + (next.durasiMenit || 0) + " mnt";
+    cntEl.textContent = fmtDur(until);
+    lblEl.textContent = notStarted ? "Acara dimulai dalam" : "Menuju sesi berikutnya";
+    prog.hidden = true;
+  } else {
+    tagEl.textContent = "Selesai";
+    tagEl.className = "pres-tag live";
+    nameEl.textContent = "Acara selesai";
+    subEl.textContent = "Semua sesi usai — terima kasih";
+    cntEl.textContent = "";
+    lblEl.textContent = "";
+    prog.hidden = true;
+  }
+
+  if (next) {
+    nextCard.hidden = false;
+    document.getElementById("pres-next-name").textContent = next.nama || "(Tanpa nama)";
+    document.getElementById("pres-next-time").textContent = fmtMin(next.start) + " – " + fmtMin(next.end) + " · " + (next.durasiMenit || 0) + " mnt";
+    document.getElementById("pres-next-in").textContent = "Dalam " + fmtDur(next.start * 60 - refSec);
+  } else {
+    nextCard.hidden = true;
+  }
+}
+
+document.getElementById("btn-presenter").addEventListener("click", enterPresenter);
+document.getElementById("btn-back2").addEventListener("click", exitPresenter);
 
 /* ================== TOAST ================== */
 let toastTimer = null;
@@ -822,7 +1294,9 @@ document.getElementById("file-input").addEventListener("change", e => { const f 
 document.getElementById("btn-live").addEventListener("click", enterLive);
 document.getElementById("btn-back").addEventListener("click", exitLive);
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && !document.getElementById("live").hidden) exitLive();
+  if (e.key !== "Escape") return;
+  if (!document.getElementById("live").hidden) exitLive();
+  else if (!document.getElementById("presenter").hidden) exitPresenter();
 });
 
 document.getElementById("session-list").addEventListener("click", e => {
@@ -897,14 +1371,13 @@ window.addEventListener("appinstalled", () => {
   showToast("Aplikasi berhasil dipasang.");
 });
 
-const fsBtn = document.getElementById("btn-fs");
 function syncFsUi() {
   const active = !!(document.fullscreenElement || document.webkitFullscreenElement);
-  document.querySelector(".ic-fs-max").hidden = active;
-  document.querySelector(".ic-fs-min").hidden = !active;
-  document.getElementById("fs-label").textContent = active ? "Keluar Layar Penuh" : "Layar Penuh";
+  document.querySelectorAll(".ic-fs-max").forEach(el => el.hidden = active);
+  document.querySelectorAll(".ic-fs-min").forEach(el => el.hidden = !active);
+  document.querySelectorAll(".fs-label").forEach(el => el.textContent = active ? "Keluar Layar Penuh" : "Layar Penuh");
 }
-fsBtn.addEventListener("click", async () => {
+async function toggleFs() {
   const el = document.documentElement;
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     (document.exitFullscreen || document.webkitExitFullscreen).call(document);
@@ -916,7 +1389,8 @@ fsBtn.addEventListener("click", async () => {
       showToast("Layar penuh tidak tersedia di browser/iframe ini.", true);
     }
   }
-});
+}
+document.querySelectorAll(".fs-toggle").forEach(b => b.addEventListener("click", toggleFs));
 document.addEventListener("fullscreenchange", syncFsUi);
 document.addEventListener("webkitfullscreenchange", syncFsUi);
 
@@ -931,10 +1405,11 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 renderEditor();
 save(true);
 
-// Buka langsung dalam mode tampil jika URL memuat ?tampil (berguna sebagai bookmark proyektor)
-if (new URLSearchParams(location.search).has("tampil")) {
-  enterLive();
-}
+// Buka langsung ke mode proyeksi via parameter URL (?tampil untuk daftar, ?presenter untuk kartu besar)
+const params = new URLSearchParams(location.search);
+if (params.has("presenter")) enterPresenter();
+else if (params.has("tampil")) enterLive();
+syncChimeUi();
 </script>
 </body>
 </html>
