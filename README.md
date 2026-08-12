@@ -6,7 +6,7 @@ Aplikasi web untuk **membuat dan mengatur susunan acara** berdasarkan waktu — 
 
 | Mode editor | Mode tampil (live) | Editor di HP |
 |---|---|---|
-| <img src="docs/screenshots/editor.png" alt="Mode editor" width="300"> | <img src="docs/screenshots/live.png" alt="Mode tampil live" width="300"> | <img src="docs/screenshots/editor-mobile.png" alt="Editor di HP" width="150"> |
+| <img src="docs/screenshots/editor.png" alt="Mode editor" width="300"> | <img src="docs/screenshots/live-countdown.gif" alt="Mode tampil live — cuplikan countdown" width="300"> | <img src="docs/screenshots/editor-mobile.png" alt="Editor di HP" width="150"> |
 
 ## Cara pakai
 
