@@ -1,11 +1,11 @@
 # Spesifikasi Desain: Aplikasi Susunan Acara ("Rundown Acara")
 
 Tanggal: 2026-08-12
-Status: Disetujui oleh pengguna (diperbarui 2026-08-12: penambahan cetak/PDF dan kemasan PWA)
+Status: Disetujui oleh pengguna (diperbarui 2026-08-12: cetak/PDF & PWA; diperbarui 2026-08-14: berbagi link terkompresi + QR)
 
 ## 1. Ringkasan
 
-Aplikasi web untuk **membuat dan mengatur susunan acara** (rundown) berdasarkan waktu. Pengguna mengelola daftar sesi dengan jam mulai & durasi, dan dapat menampilkan rundown secara live di layar/proyektor selama acara berlangsung. Aplikasi inti berbentuk satu file `index.html` (tanpa build/dependensi) yang dikemas sebagai **PWA** — bisa di-install di HP dengan ikon sendiri, berjalan layar penuh, dan tetap bisa dibuka saat offline.
+Aplikasi web untuk **membuat dan mengatur susunan acara** (rundown) berdasarkan waktu. Pengguna mengelola daftar sesi dengan jam mulai & durasi, dan dapat menampilkan rundown secara live di layar/proyektor selama acara berlangsung. Rundown dapat **dibagikan** ke perangkat lain lewat link terkompresi atau kode QR — tanpa server. Aplikasi inti berbentuk satu file `index.html` (tanpa build/dependensi) yang dikemas sebagai **PWA** — bisa di-install di HP dengan ikon sendiri, berjalan layar penuh, dan tetap bisa dibuka saat offline.
 
 ## 2. Kebutuhan (dari klarifikasi)
 
@@ -15,6 +15,7 @@ Aplikasi web untuk **membuat dan mengatur susunan acara** (rundown) berdasarkan 
 4. **Fitur sesi:** nama, durasi, PIC/penanggung jawab, catatan, bagian/kategori berwarna (mis. Pembukaan, Acara Inti, Penutup), dan tanda **istirahat** (break).
 5. **Mode tampil (live):** tampilan besar & bersih untuk proyektor — menyorot sesi yang sedang berjalan, countdown ke sesi non-istirahat berikutnya, sinkron dengan jam nyata.
 6. **PWA:** bisa di-install di HP (manifest + ikon + service worker untuk offline) dan mode layar penuh.
+7. **Berbagi rundown:** menghasilkan link pendek berisi seluruh data rundown (terkompresi) + kode QR yang bisa dipindai; penerima membuka link dan rundown dimuat di perangkatnya.
 
 ## 3. Arsitektur
 
@@ -22,13 +23,18 @@ Aplikasi inti: satu file `index.html` berisi HTML + CSS + JavaScript vanilla —
 
 | File | Peran |
 |---|---|
-| `index.html` | Aplikasi utama (editor + mode live, localStorage, export/import, cetak/PDF). Memuat manifest & ikon, dan mendaftarkan service worker. |
+| `index.html` | Aplikasi utama (editor + mode live, localStorage, export/import, cetak/PDF, berbagi link + QR). Memuat manifest & ikon, dan mendaftarkan service worker. |
 | `manifest.webmanifest` | Manifest PWA: nama, ikon, warna tema, `display: standalone` → tampil seperti aplikasi asli saat di-install. |
 | `sw.js` | Service worker: cache aset statis untuk offline; strategi network-first untuk navigasi agar update cepat. |
 | `icon-180.png`, `icon-192.png`, `icon-512.png` | Ikon aplikasi (PNG) — dipakai manifest, favicon, dan `apple-touch-icon`. |
 | `tools/generate_icons.py` | Generator ikon (stdlib Python saja) — jalankan ulang jika ingin mengubah desain ikon. |
 
 Catatan penting: service worker dan instalasi PWA hanya aktif saat aplikasi disajikan melalui **HTTPS** atau **localhost** (tidak dari `file://`). Saat dibuka langsung sebagai file, seluruh fungsi editor tetap berjalan normal — hanya fitur PWA yang nonaktif.
+
+Fitur berbagi juga **inline di `index.html`** (tanpa dependensi eksternal):
+
+- **Kompresi link** — port dari pustaka lz-string (algoritma LZ, `compressToEncodedURIComponent`, perilaku versi 1.4.5) yang menghasilkan output **byte-identik** dengan pustaka asli sehingga bisa saling decode.
+- **Encoder QR offline** — encoder kode QR dari nol (mode byte, level koreksi M, versi 1–40 otomatis, pemilihan mask dengan penalti minimum) yang menghasilkan SVG tanpa pustaka pihak ketiga.
 
 Dua mode dalam satu layar:
 
@@ -101,7 +107,7 @@ Design system dari ui-ux-pro-max ("Soft UI Evolution"):
 
 ### Mode Editor
 
-- **Bar atas:** judul acara (editable), input jam mulai acara, tombol **Import**, **Export**, **Cetak / PDF**, tombol besar oranye **Mode Tampil**, dan tombol **Pasang** (muncul otomatis saat browser siap meng-install PWA).
+- **Bar atas:** judul acara (editable), input jam mulai acara, tombol **Import**, **Export**, **Cetak / PDF**, **Bagikan**, tombol besar oranye **Mode Tampil**, dan tombol **Pasang** (muncul otomatis saat browser siap meng-install PWA).
 - **Daftar sesi:** kartu per sesi, aksen warna sesuai bagian:
   - nama sesi, jam mulai (hasil hitung), durasi (input menit), PIC, catatan;
   - toggle **Istirahat**;
@@ -127,6 +133,13 @@ Design system dari ui-ux-pro-max ("Soft UI Evolution"):
 - Tombol **Cetak / PDF** di bar atas editor membuka dialog cetak browser (dengan opsi "Simpan sebagai PDF"); pintasan `Ctrl+P`/`Cmd+P` juga memakai format yang sama (event `beforeprint`).
 - Print stylesheet (`@media print`) menyembunyikan editor, mode live, dan toast; hanya dokumen rundown yang tercetak: judul, jam mulai + tanggal cetak, tabel (No | Waktu | Sesi | Durasi | PIC | Catatan), baris istirahat diberi badge, serta footer total durasi & jam selesai.
 
+### Bagikan (Link & QR)
+
+- **Tombol Bagikan** di bar atas editor membuka modal berisi: link lengkap (`<alamat>#d=<data terkompresi>`) yang bisa disalin, tombol **Salin Link**, dan **kode QR** SVG yang di-generate di perangkat (bisa dipindai dari HP).
+- **Format link:** data rundown (`JSON.stringify(state)`) dikompresi dengan algoritma LZ yang kompatibel lz-string, di-encode ke alfabet URL-safe (`A–Z a–z 0–9 + - $`), lalu disisipkan sebagai fragment `#d=…` — jadi tidak ada data yang diunggah ke server mana pun.
+- **Muat dari link:** saat aplikasi dibuka dengan fragment `#d=`, data didekompresi + divalidasi ulang (reuse validasi import). Jika perangkat **belum punya** data tersimpan → rundown dimuat otomatis. Jika **sudah punya** data → muncul banner konfirmasi *"Ada rundown di link ini"* dengan tombol **Muat** (mengganti data saat ini) atau **Tutup** (menjaga data lama); hash dibersihkan setelah diputuskan.
+- **Batas QR:** jika data terkompresi melebihi kapasitas QR versi 40 level M (~2.300 byte), QR tidak ditampilkan dan muncul peringatan untuk memakai **Salin Link** atau **Export JSON**.
+
 ### PWA & Instalasi
 
 - **Manifest** (`manifest.webmanifest`): `display: standalone`, `theme_color: #7C3AED`, ikon 192/512 dengan `purpose: any maskable`, `start_url: ./index.html`.
@@ -138,6 +151,7 @@ Design system dari ui-ux-pro-max ("Soft UI Evolution"):
 ## 7. Penanganan Error
 
 - **Import JSON:** validasi struktur — wajib ada `sesi` (array), setiap sesi punya `nama` (string) dan `durasiMenit` (angka ≥ 0), jam valid (`HH:MM`). Jika gagal → pesan error jelas, data lama tidak tertimpa.
+- **Link `#d=` rusak/tidak valid:** dekompresi gagal atau hasil validasi import tidak lolos → toast error jelas, hash dibersihkan, data yang sudah ada tidak disentuh.
 - **Edge case:**
   - sesi tanpa nama → ditampilkan "(Tanpa nama)";
   - rundown kosong → pesan kosong + tombol tambah sesi;
@@ -158,3 +172,5 @@ Setelah implementasi, uji manual di preview:
 8. Responsif 375px (HP) dan tampilan lebar (laptop).
 9. Cetak/PDF: format dokumen bersih, editor tersembunyi, baris istirahat ditandai.
 10. PWA (via server statis / hosting, karena preview hanya menyajikan `index.html`): manifest & ikon tersaji 200, `sw.js` lolos cek sintaks, SW terdaftar, halaman bisa dimuat offline setelah pertama dibuka, dan tombol layar penuh toggle masuk/keluar.
+11. Bagikan: modal terbuka, link terbentuk dengan benar, QR ter-generate, salin link berfungsi; QR hasil encoder sendiri bisa di-decode kembali (divalidasi dengan jsQR di versi 1–40, termasuk teks non-ASCII/emoji) dan output kompresi byte-identik dengan pustaka lz-string asli (round-trip dua arah).
+12. Muat dari link: perangkat tanpa data → termuat otomatis; perangkat dengan data → banner konfirmasi muncul, tombol Muat mengganti data, tombol Tutup menjaga data lama, dan link rusak ditolak tanpa merusak data.
