@@ -448,6 +448,12 @@
         <label for="jam-mulai">Jam mulai acara</label>
         <input id="jam-mulai" type="time" class="input" value="08:00">
       </div>
+      <button id="btn-undo" class="icon-btn" disabled title="Tidak ada yang bisa di-urungkan" aria-label="Urungkan perubahan">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 20 14.5 5.5 5.5 0 0 1 14.5 20H11"/></svg>
+      </button>
+      <button id="btn-redo" class="icon-btn" disabled title="Tidak ada yang bisa diulangi" aria-label="Ulangi perubahan">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5 5.5 5.5 0 0 0 9.5 20H13"/></svg>
+      </button>
       <button id="btn-import" class="btn btn-ghost" title="Import dari file JSON">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
         Import
@@ -680,6 +686,67 @@ function save(silent) {
     el.textContent = "Tersimpan otomatis · " + new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
   }
 }
+
+/* ================== UNDO/REDO & SIMPAN DEBOUNCE ================== */
+const UNDO_MAX = 50;
+const undoStack = [];
+const redoStack = [];
+let undoCooldown = 0;
+let saveTimer = null;
+
+// Snapshot SEBELUM mutasi. Ketikan/aksi cepat dalam jendela 400 ms (mis. mengetik
+// nama sesi) dianggap SATU langkah undo, bukan per karakter. `force` dipakai untuk
+// aksi diskrit (import, muat dari link) supaya selalu jadi langkah sendiri.
+function pushUndo(force) {
+  const now = Date.now();
+  const snap = JSON.stringify(state);
+  if (force || now - undoCooldown >= 400) {
+    if (!undoStack.length || undoStack[undoStack.length - 1] !== snap) {
+      undoStack.push(snap);
+      if (undoStack.length > UNDO_MAX) undoStack.shift();
+    }
+    undoCooldown = now;
+  }
+  if (redoStack.length) redoStack.length = 0;
+  updateUndoUi();
+}
+
+function applySnapshot(snap) {
+  state = JSON.parse(snap);
+  undoCooldown = 0; // edit berikutnya setelah undo/redo = burst baru, pasti punya snapshot
+  save(true);
+  renderEditor();
+  updateUndoUi();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(JSON.stringify(state));
+  applySnapshot(undoStack.pop());
+  showToast("Perubahan dibatalkan (undo).");
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(JSON.stringify(state));
+  applySnapshot(redoStack.pop());
+  showToast("Perubahan dikembalikan (redo).");
+}
+
+function updateUndoUi() {
+  const u = document.getElementById("btn-undo");
+  const r = document.getElementById("btn-redo");
+  if (u) { u.disabled = undoStack.length === 0; u.title = undoStack.length ? "Urungkan perubahan (Ctrl+Z)" : "Tidak ada yang bisa di-urungkan"; }
+  if (r) { r.disabled = redoStack.length === 0; r.title = redoStack.length ? "Ulangi perubahan (Ctrl+Shift+Z)" : "Tidak ada yang bisa diulangi"; }
+}
+
+// Simpan localStorage di-debounce 300 ms — tidak menulis ulang di setiap ketukan.
+// Data tetap aman saat menutup/tab hilang lewat pagehide.
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => save(), 300);
+}
+window.addEventListener("pagehide", () => { clearTimeout(saveTimer); save(true); });
 
 /* ================== VALIDASI IMPORT ================== */
 function validateImport(data) {
@@ -979,10 +1046,11 @@ function tPointerUp() {
   if (!drag) return;
   const s = state.sesi[drag.i];
   if (drag.moved) {
+    pushUndo();
     if (drag.mode === "resize") s.durasiMenit = drag.newDur;
     else if (drag.mode === "resizeL") { s.pinnedJam = fmtMin(drag.newStart); s.durasiMenit = drag.newDur; }
     else s.pinnedJam = fmtMin(drag.newStart);
-    save();
+    scheduleSave();
   }
   drag = null;
   document.body.classList.remove("dragging");
@@ -1301,6 +1369,7 @@ async function importFile(file) {
   const res = validateImport(data);
   if (!res.ok) { showToast(res.msg, true); return; }
   if (state.sesi.length > 0 && !confirm("Ganti rundown saat ini dengan isi file?")) return;
+  pushUndo(true);
   state = res.data;
   save(true);
   renderEditor();
@@ -1801,6 +1870,7 @@ function handleHashLink() {
     pendingShare = res.data;
     document.getElementById("share-banner").hidden = false;
   } else {
+    pushUndo(true);
     state = res.data;
     save(true);
     renderEditor();
@@ -1814,7 +1884,7 @@ document.getElementById("btn-share-close").addEventListener("click", closeShare)
 document.getElementById("share-modal").addEventListener("click", e => { if (e.target.id === "share-modal") closeShare(); });
 document.getElementById("btn-copy-link").addEventListener("click", copyShareLink);
 document.getElementById("banner-load").addEventListener("click", () => {
-  if (pendingShare) { state = pendingShare; save(true); renderEditor(); }
+  if (pendingShare) { pushUndo(true); state = pendingShare; save(true); renderEditor(); }
   pendingShare = null;
   document.getElementById("share-banner").hidden = true;
   clearHash();
@@ -1826,26 +1896,37 @@ document.getElementById("banner-dismiss").addEventListener("click", () => {
   clearHash();
 });
 
-document.getElementById("judul").addEventListener("input", e => { state.judulAcara = e.target.value; save(); });
+document.getElementById("judul").addEventListener("input", e => { pushUndo(); state.judulAcara = e.target.value; scheduleSave(); });
 document.getElementById("jam-mulai").addEventListener("input", e => {
+  pushUndo();
   state.jamMulaiAcara = e.target.value;
-  save();
+  scheduleSave();
   renderEditor();
 });
 document.getElementById("btn-add").addEventListener("click", () => {
+  pushUndo();
   const newId = uid();
   state.sesi.push({ id: newId, nama: "", durasiMenit: 10, pic: "", catatan: "", bagian: uniqueBagian()[0] || "", isIstirahat: false, pinnedJam: null });
   expandedIds.add(newId);
-  save(); renderEditor();
+  scheduleSave(); renderEditor();
   const last = document.querySelector("#session-list .s-card:last-child .s-name");
   if (last) last.focus();
 });
+document.getElementById("btn-undo").addEventListener("click", undo);
+document.getElementById("btn-redo").addEventListener("click", redo);
 document.getElementById("btn-export").addEventListener("click", exportJSON);
 document.getElementById("btn-import").addEventListener("click", () => document.getElementById("file-input").click());
 document.getElementById("file-input").addEventListener("change", e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ""; });
 document.getElementById("btn-live").addEventListener("click", enterLive);
 document.getElementById("btn-back").addEventListener("click", exitLive);
 document.addEventListener("keydown", e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && (e.key === "z" || e.key === "Z")) {
+    e.preventDefault();
+    if (e.shiftKey) redo(); else undo();
+    return;
+  }
+  if (mod && (e.key === "y" || e.key === "Y")) { e.preventDefault(); redo(); return; }
   if (e.key !== "Escape") return;
   if (!document.getElementById("share-modal").hidden) { closeShare(); return; }
   if (!document.getElementById("live").hidden) exitLive();
@@ -1859,20 +1940,33 @@ document.getElementById("session-list").addEventListener("click", e => {
   const s = state.sesi[i];
   if (!s) return;
   const a = btn.dataset.a;
-  if (a === "up") { if (i > 0) { [state.sesi[i - 1], state.sesi[i]] = [state.sesi[i], state.sesi[i - 1]]; } }
-  else if (a === "down") { if (i < state.sesi.length - 1) { [state.sesi[i + 1], state.sesi[i]] = [state.sesi[i], state.sesi[i + 1]]; } }
+  if (a === "toggle") {
+    // buka/tutup kartu murni UI — bukan langkah undo
+    if (expandedIds.has(s.id)) expandedIds.delete(s.id); else expandedIds.add(s.id);
+    renderEditor();
+    return;
+  }
+  if (a === "up") {
+    if (i <= 0) return;
+    pushUndo();
+    [state.sesi[i - 1], state.sesi[i]] = [state.sesi[i], state.sesi[i - 1]];
+  }
+  else if (a === "down") {
+    if (i >= state.sesi.length - 1) return;
+    pushUndo();
+    [state.sesi[i + 1], state.sesi[i]] = [state.sesi[i], state.sesi[i + 1]];
+  }
   else if (a === "del") {
     if (!confirm("Hapus sesi \"" + (s.nama || "(Tanpa nama)") + "\"?")) return;
+    pushUndo();
     state.sesi.splice(i, 1);
   }
   else if (a === "pin") {
+    pushUndo();
     if (s.pinnedJam != null && s.pinnedJam !== "") s.pinnedJam = null;
     else s.pinnedJam = fmtMin(computeSchedule()[i].start);
   }
-  else if (a === "toggle") {
-    if (expandedIds.has(s.id)) expandedIds.delete(s.id); else expandedIds.add(s.id);
-  }
-  save(); renderEditor();
+  scheduleSave(); renderEditor();
 });
 
 document.getElementById("session-list").addEventListener("input", e => {
@@ -1882,6 +1976,7 @@ document.getElementById("session-list").addEventListener("input", e => {
   if (!card) return;
   const i = state.sesi.findIndex(x => x.id === card.dataset.id);
   if (i < 0) return;
+  pushUndo();
   const f = t.dataset.f;
   if (f === "nama") state.sesi[i].nama = t.value;
   else if (f === "bagian") state.sesi[i].bagian = t.value;
@@ -1889,7 +1984,7 @@ document.getElementById("session-list").addEventListener("input", e => {
   else if (f === "catatan") state.sesi[i].catatan = t.value;
   else if (f === "durasi") state.sesi[i].durasiMenit = Math.max(0, Math.floor(Number(t.value) || 0));
   else if (f === "pinjam") { if (t.value === "") state.sesi[i].pinnedJam = null; else if (validHM(t.value)) state.sesi[i].pinnedJam = t.value; }
-  save();
+  scheduleSave();
 });
 
 document.getElementById("session-list").addEventListener("change", e => {
@@ -1899,8 +1994,9 @@ document.getElementById("session-list").addEventListener("change", e => {
   const i = state.sesi.findIndex(x => x.id === card.dataset.id);
   if (i < 0) return;
   if (t.dataset && t.dataset.f === "istirahat") {
+    pushUndo();
     state.sesi[i].isIstirahat = t.checked;
-    save();
+    scheduleSave();
   }
   renderEditor();
 });
@@ -1957,6 +2053,7 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 /* ================== INIT ================== */
 renderEditor();
 save(true);
+updateUndoUi();
 
 // Muat rundown yang dibagikan lewat link (#d=...) — banner konfirmasi jika sudah ada data
 handleHashLink();
