@@ -14,6 +14,7 @@ Aplikasi web untuk **membuat dan mengatur susunan acara** berdasarkan waktu — 
 
 - **Langsung:** buka `index.html` di browser (HP/laptop). Semua fitur editor jalan normal; data tersimpan otomatis di browser.
 - **Mode tampil langsung:** tambahkan `?tampil` di akhir URL (mis. `https://…/index.html?tampil`) agar langsung terbuka ke mode live — cocok sebagai bookmark/tautan untuk layar proyektor.
+- **Bagikan lewat link/QR:** tombol **Bagikan** membuat link pendek berisi seluruh data rundown (terkompresi, tanpa server) + kode QR — kirim ke panitia atau pindai dari HP. Buka link itu dan rundown bisa dimuat (dengan konfirmasi jika di perangkat itu sudah ada data lain).
 - **PWA / instalasi / offline:** butuh di-host lewat **HTTPS** (atau `localhost`). Service worker tidak aktif jika dibuka dari `file://`.
 
 ## Hosting di GitHub Pages

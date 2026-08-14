@@ -361,11 +361,44 @@
     *,*::before,*::after{transition:none!important;animation:none!important}
   }
 
+  /* ============ BAGIKAN (LINK & QR) ============ */
+  .share-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:var(--cta-soft);border:1px solid #FCD9B4;border-radius:var(--radius);
+    padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow-sm);
+  }
+  .share-banner strong{font-size:15px;color:var(--cta-strong)}
+  .share-banner-sub{font-size:13px;color:var(--text-muted);margin-top:2px}
+  .share-banner-actions{display:flex;gap:8px}
+  .share-banner-actions .btn{padding:8px 14px}
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(42,21,79,.5);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;z-index:60;padding:16px;
+  }
+  .modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    box-shadow:0 24px 70px -20px rgba(42,21,79,.55);width:100%;max-width:430px;
+    padding:20px;max-height:calc(100vh - 40px);overflow:auto;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .modal-head h2{font-family:"Bebas Neue",sans-serif;font-size:24px;letter-spacing:.05em;color:var(--text)}
+  .share-desc{font-size:13.5px;color:var(--text-muted);margin-bottom:12px}
+  .share-url-row{display:flex;gap:8px}
+  .share-url-row .input{font-size:13px;color:var(--text-muted);flex:1}
+  .share-qr{margin:14px auto 4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;width:fit-content}
+  .share-qr svg{display:block;width:min(232px, calc(100vw - 96px));height:auto}
+  .share-status{font-size:12.5px;color:var(--text-muted);text-align:center;line-height:1.45;margin-top:8px}
+  .share-status.warn{color:var(--cta-strong);font-weight:600}
+  @media (max-width:480px){
+    .share-url-row{flex-direction:column}
+    .share-url-row .btn{justify-content:center}
+  }
+
   /* ============ CETAK / PDF ============ */
   #print-area{display:none}
   @media print{
     body{background:#fff}
-    #editor,#live,.toast,#file-input{display:none!important}
+    #editor,#live,.toast,#file-input,#share-modal{display:none!important}
     #print-area{
       display:block;color:#1a1a1a;font-family:"Source Sans 3",system-ui,sans-serif;
       font-size:12px;line-height:1.45;max-width:100%;
@@ -427,6 +460,10 @@
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Cetak / PDF
       </button>
+      <button id="btn-share" class="btn btn-ghost" title="Bagikan rundown lewat link atau kode QR">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+        Bagikan
+      </button>
       <button id="btn-live" class="btn btn-cta">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="m10 8 5 2.5-5 2.5z"/><path d="M8 21h8M12 17v4"/></svg>
         Mode Tampil
@@ -446,6 +483,17 @@
     <label class="s-label" for="judul">Judul acara</label>
     <input id="judul" class="input title-input" placeholder="cth: Rapat Kerja Tahunan 2026">
   </section>
+
+  <div id="share-banner" class="share-banner" hidden>
+    <div>
+      <strong>Ada rundown di link ini</strong>
+      <div class="share-banner-sub">Link berisi data rundown — muat untuk menggantikan rundown saat ini.</div>
+    </div>
+    <div class="share-banner-actions">
+      <button id="banner-load" class="btn btn-primary">Muat</button>
+      <button id="banner-dismiss" class="btn btn-ghost">Batal</button>
+    </div>
+  </div>
 
   <div class="view-switch" role="tablist" aria-label="Tampilan daftar sesi">
     <button id="view-list" class="view-btn active" role="tab" aria-selected="true">Daftar</button>
@@ -530,6 +578,27 @@
 
 <section id="print-area" aria-hidden="true"></section>
 
+<div id="share-modal" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    <div class="modal-head">
+      <h2 id="share-title">Bagikan rundown</h2>
+      <button class="icon-btn" id="btn-share-close" aria-label="Tutup" title="Tutup">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p class="share-desc">Link ini berisi seluruh data rundown (tanpa server). Kirim atau pindai untuk membukanya di perangkat lain.</p>
+    <div class="share-url-row">
+      <input id="share-url" class="input" readonly aria-label="Link rundown">
+      <button id="btn-copy-link" class="btn btn-primary">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Salin Link
+      </button>
+    </div>
+    <div id="share-qr" class="share-qr" aria-label="Kode QR untuk membuka link ini"></div>
+    <p id="share-status" class="share-status"></p>
+  </div>
+</div>
+
 <script>
 "use strict";
 
@@ -552,7 +621,10 @@ function icon(name, cls) {
     coffee: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/>',
     warn: '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><path d="M12 9v4M12 17h.01"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
-    note: '<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><path d="M15 3v6h6"/>'
+    note: '<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><path d="M15 3v6h6"/>',
+    share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>',
+    link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+    x: '<path d="M18 6 6 18M6 6l12 12"/>'
   };
   return '<svg class="ic ' + (cls || "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || "") + "</svg>";
 }
@@ -1274,6 +1346,486 @@ function renderPrint() {
 document.getElementById("btn-print").addEventListener("click", () => { renderPrint(); window.print(); });
 window.addEventListener("beforeprint", renderPrint);
 
+/* ================== BAGIKAN (LINK & QR) ================== */
+// --- Kompresi: kompatibel dengan lz-string (compressToEncodedURIComponent) ---
+const KEY_URI = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$";
+const KEY_REV = (() => { const r = {}; for (let i = 0; i < KEY_URI.length; i++) r[KEY_URI.charAt(i)] = i; return r; })();
+
+function compressData(uncompressed) {
+  // Port dari lz-string 1.4.5 _compress (bitsPerChar=6) — terverifikasi byte-identik
+  // dengan pustaka asli untuk rentang input luas. Perhatikan: emisi karakter baru
+  // men-decrement enlargeIn DUA kali (di dalam cabang + kode bersama), emisi kode
+  // kamus SEKALI — pola khas 1.4.5 yang dipakai decompressData.
+  if (uncompressed == null) return "";
+  const dict = {}, dictToCreate = {};
+  let c = "", wc = "", w = "", enlargeIn = 2, dictSize = 3, numBits = 2;
+  let dataVal = 0, dataPos = 0;
+  const out = [];
+  const pushBits = (val, n) => {
+    for (let j = 0; j < n; j++) {
+      dataVal = (dataVal << 1) | (val & 1);
+      if (dataPos === 5) { dataPos = 0; out.push(KEY_URI.charAt(dataVal)); dataVal = 0; }
+      else dataPos++;
+      val = val >> 1;
+    }
+  };
+  const pushZeros = (n) => {
+    for (let j = 0; j < n; j++) {
+      dataVal = dataVal << 1;
+      if (dataPos === 5) { dataPos = 0; out.push(KEY_URI.charAt(dataVal)); dataVal = 0; }
+      else dataPos++;
+    }
+  };
+  const grow = () => {
+    enlargeIn--;
+    if (enlargeIn === 0) { enlargeIn = Math.pow(2, numBits); numBits++; }
+  };
+  const emitNew = (code) => {
+    if (code < 256) { pushZeros(numBits); pushBits(code, 8); }
+    else { pushBits(1, numBits); pushBits(code, 16); }
+    grow();
+    delete dictToCreate[w];
+  };
+  for (let i = 0; i < uncompressed.length; i++) {
+    c = uncompressed.charAt(i);
+    if (!Object.prototype.hasOwnProperty.call(dict, c)) { dict[c] = dictSize++; dictToCreate[c] = true; }
+    wc = w + c;
+    if (Object.prototype.hasOwnProperty.call(dict, wc)) { w = wc; }
+    else {
+      if (Object.prototype.hasOwnProperty.call(dictToCreate, w)) emitNew(w.charCodeAt(0));
+      else pushBits(dict[w], numBits);
+      grow();
+      dict[wc] = dictSize++;
+      w = String(c);
+    }
+  }
+  if (w !== "") {
+    if (Object.prototype.hasOwnProperty.call(dictToCreate, w)) emitNew(w.charCodeAt(0));
+    else pushBits(dict[w], numBits);
+    grow();
+  }
+  // penanda akhir aliran (kode 2) lalu pad ke karakter 6-bit penuh
+  pushBits(2, numBits);
+  while (true) {
+    dataVal = dataVal << 1;
+    if (dataPos === 5) { out.push(KEY_URI.charAt(dataVal)); break; }
+    else dataPos++;
+  }
+  return out.join("");
+}
+
+function decompressData(input) {
+  if (input == null) return "";
+  if (input === "") return null;
+  const length = input.length;
+  let index = 1, val = KEY_REV[input.charAt(0)], position = 32;
+  const readBit = () => {
+    const b = (val & position) !== 0 ? 1 : 0;
+    position = position >> 1;
+    if (position === 0) { position = 32; val = KEY_REV[input.charAt(index++)]; }
+    return b;
+  };
+  const readBits = (n) => {
+    let bits = 0, power = 1;
+    for (let i = 0; i < n; i++) { bits |= readBit() * power; power <<= 1; }
+    return bits;
+  };
+  const dict = [0, 1, 2];
+  let enlargeIn = 4, dictSize = 4, numBits = 3;
+  let c = readBits(2);
+  if (c === 0) c = readBits(8);
+  else if (c === 1) c = readBits(16);
+  else if (c === 2) return "";
+  dict[3] = c;
+  let w = String.fromCharCode(c);
+  const result = [w];
+  while (true) {
+    if (index > length) return "";
+    c = readBits(numBits);
+    if (c === 0) { c = readBits(8); dict[dictSize++] = String.fromCharCode(c); c = dictSize - 1; enlargeIn--; }
+    else if (c === 1) { c = readBits(16); dict[dictSize++] = String.fromCharCode(c); c = dictSize - 1; enlargeIn--; }
+    else if (c === 2) return result.join("");
+    if (enlargeIn === 0) { enlargeIn = Math.pow(2, numBits); numBits++; }
+    let entry;
+    if (dict[c] != null) entry = dict[c];
+    else if (c === dictSize) entry = w + w.charAt(0);
+    else return null;
+    result.push(entry);
+    dict[dictSize++] = w + entry.charAt(0);
+    enlargeIn--;
+    w = entry;
+    if (enlargeIn === 0) { enlargeIn = Math.pow(2, numBits); numBits++; }
+  }
+}
+
+// --- Encoder QR: mode byte, level M, versi 1-40, keluaran SVG (tanpa dependensi) ---
+const ECC_M = [0,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26,26,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28,28];
+const BLOCKS_M = [0,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16,17,17,18,20,21,23,25,26,28,29,31,33,35,37,38,40,43,45,47,49];
+const GF_EXP = new Array(512), GF_LOG = new Array(256);
+(function () {
+  let x = 1;
+  for (let i = 0; i < 255; i++) { GF_EXP[i] = x; GF_LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11D; }
+  for (let i = 255; i < 512; i++) GF_EXP[i] = GF_EXP[i - 255];
+})();
+function gfMul(x, y) { return (x === 0 || y === 0) ? 0 : GF_EXP[GF_LOG[x] + GF_LOG[y]]; }
+function rsDivisor(deg) {
+  const res = [];
+  for (let i = 0; i < deg - 1; i++) res.push(0);
+  res.push(1);
+  let root = 1;
+  for (let i = 0; i < deg; i++) {
+    for (let j = 0; j < res.length; j++) {
+      res[j] = gfMul(res[j], root);
+      if (j + 1 < res.length) res[j] ^= res[j + 1];
+    }
+    root = gfMul(root, 2);
+  }
+  return res;
+}
+function rsRemainder(data, divisor) {
+  const res = divisor.map(() => 0);
+  for (const b of data) {
+    const factor = b ^ res.shift();
+    res.push(0);
+    divisor.forEach((coef, i) => { res[i] ^= gfMul(coef, factor); });
+  }
+  return res;
+}
+function qrRawModules(ver) {
+  let n = (16 * ver + 128) * ver + 64;
+  if (ver >= 2) {
+    const a = Math.floor(ver / 7) + 2;
+    n -= (25 * a - 10) * a - 55;
+    if (ver >= 7) n -= 36;
+  }
+  return n;
+}
+function qrDataBits(ver) { return (Math.floor(qrRawModules(ver) / 8) - ECC_M[ver] * BLOCKS_M[ver]) * 8; }
+function qrByteCapacity(ver) { return Math.floor((qrDataBits(ver) - 4 - (ver < 10 ? 8 : 16)) / 8); }
+function qrAlignPos(ver) {
+  if (ver === 1) return [];
+  const a = Math.floor(ver / 7) + 2;
+  const step = (ver === 32) ? 26 : Math.ceil((ver * 4 + 4) / (a * 2 - 2)) * 2;
+  const pos = [6];
+  for (let p = ver * 4 + 10; pos.length < a; p -= step) pos.splice(1, 0, p);
+  return pos;
+}
+function qrPenalty(cand, size) {
+  let result = 0;
+  const m = cand;
+  for (let y = 0; y < size; y++) {
+    let run = 1;
+    for (let x = 1; x < size; x++) {
+      if (m[y][x] === m[y][x - 1]) {
+        run++;
+        if (run === 5) result += 3;
+        else if (run > 5) result += 1;
+      } else run = 1;
+    }
+    for (let x = 0; x + 7 < size; x++) {
+      if (m[y][x] && !m[y][x + 1] && m[y][x + 2] && m[y][x + 3] && m[y][x + 4] && !m[y][x + 5] && m[y][x + 6]) {
+        const before = x >= 4 && !m[y][x - 1] && !m[y][x - 2] && !m[y][x - 3] && !m[y][x - 4];
+        const after = x + 11 <= size && !m[y][x + 7] && !m[y][x + 8] && !m[y][x + 9] && !m[y][x + 10];
+        if (before || after) result += 40;
+      }
+    }
+  }
+  for (let x = 0; x < size; x++) {
+    let run = 1;
+    for (let y = 1; y < size; y++) {
+      if (m[y][x] === m[y - 1][x]) {
+        run++;
+        if (run === 5) result += 3;
+        else if (run > 5) result += 1;
+      } else run = 1;
+    }
+    for (let y = 0; y + 7 < size; y++) {
+      if (m[y][x] && !m[y + 1][x] && m[y + 2][x] && m[y + 3][x] && m[y + 4][x] && !m[y + 5][x] && m[y + 6][x]) {
+        const before = y >= 4 && !m[y - 1][x] && !m[y - 2][x] && !m[y - 3][x] && !m[y - 4][x];
+        const after = y + 11 <= size && !m[y + 7][x] && !m[y + 8][x] && !m[y + 9][x] && !m[y + 10][x];
+        if (before || after) result += 40;
+      }
+    }
+  }
+  for (let y = 0; y + 1 < size; y++) for (let x = 0; x + 1 < size; x++) {
+    if (m[y][x] === m[y][x + 1] && m[y][x] === m[y + 1][x] && m[y][x] === m[y + 1][x + 1]) result += 3;
+  }
+  let dark = 0;
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (m[y][x]) dark++;
+  result += Math.floor(Math.abs(dark * 20 - size * size * 10) / (size * size)) * 10;
+  return result;
+}
+function makeQrSvg(text) {
+  // panjang byte UTF-8 (gabungkan pasangan pengganti emoji menjadi 4 byte)
+  let byteLen = 0;
+  for (let i = 0; i < text.length; i++) {
+    const cc = text.charCodeAt(i);
+    if (cc >= 0xD800 && cc <= 0xDBFF && i + 1 < text.length) {
+      const low = text.charCodeAt(i + 1);
+      if (low >= 0xDC00 && low <= 0xDFFF) { byteLen += 4; i++; continue; }
+    }
+    byteLen += cc < 0x80 ? 1 : cc < 0x800 ? 2 : 3;
+  }
+  let ver = 1;
+  while (ver <= 40 && qrByteCapacity(ver) < byteLen) ver++;
+  if (ver > 40) return null;
+  const size = ver * 4 + 17;
+  const modules = Array.from({ length: size }, () => new Array(size).fill(false));
+  const isFunc = Array.from({ length: size }, () => new Array(size).fill(false));
+  const setF = (x, y, on) => { modules[y][x] = on; isFunc[y][x] = true; };
+  const drawFinder = (cx, cy) => {
+    for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+      const x = cx + dx, y = cy + dy;
+      if (x >= 0 && x < size && y >= 0 && y < size) {
+        const d = Math.max(Math.abs(dx), Math.abs(dy));
+        setF(x, y, d !== 2 && d !== 4);
+      }
+    }
+  };
+  // timing dulu, lalu finder — pola timing menimpa area finder jika dibalik
+  for (let i = 0; i < size; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+  drawFinder(3, 3); drawFinder(size - 4, 3); drawFinder(3, size - 4);
+  const ap = qrAlignPos(ver);
+  for (const ax of ap) for (const ay of ap) {
+    if ((ax === 6 && ay === 6) || (ax === 6 && ay === size - 7) || (ax === size - 7 && ay === 6)) continue;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setF(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+  }
+  const drawFormat = (m, cand) => {
+    let d = m;
+    let rem = d;
+    for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+    const bits = (d << 10 | rem) ^ 0x5412;
+    const bit = (i) => ((bits >>> i) & 1) !== 0;
+    for (let i = 0; i <= 5; i++) cand[i][8] = bit(i);
+    cand[7][8] = bit(6);
+    cand[8][8] = bit(7);
+    cand[8][7] = bit(8);
+    for (let i = 9; i < 15; i++) cand[8][14 - i] = bit(i);
+    for (let i = 0; i < 8; i++) cand[8][size - 1 - i] = bit(i);
+    for (let i = 8; i < 15; i++) cand[size - 15 + i][8] = bit(i);
+    cand[size - 8][8] = true;
+  };
+  if (ver >= 7) {
+    let rem = ver;
+    for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+    const bits = (ver << 12) | rem;
+    for (let i = 0; i < 18; i++) {
+      const color = ((bits >>> i) & 1) !== 0;
+      const a = size - 11 + i % 3, b = Math.floor(i / 3);
+      setF(a, b, color); setF(b, a, color);
+    }
+  }
+  // cadangkan sel format info + modul gelap SEBELUM penempatan data, supaya bit data
+  // tidak tertulis di sana (drawFormat nanti menimpanya dengan bit format yang benar)
+  const reserveFormat = () => {
+    for (let i = 0; i <= 5; i++) { setF(8, i); setF(i, 8); }
+    setF(8, 7); setF(8, 8); setF(7, 8);
+    for (let i = 0; i < 8; i++) setF(size - 1 - i, 8);
+    for (let i = 8; i < 15; i++) setF(8, size - 15 + i);
+    setF(8, size - 8);
+  };
+  reserveFormat();
+  const maxBits = qrDataBits(ver);
+  const bits = [];
+  const addBits = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  addBits(4, 4);
+  addBits(byteLen, ver < 10 ? 8 : 16);
+  for (let i = 0; i < text.length; i++) {
+    const cc = text.charCodeAt(i);
+    if (cc >= 0xD800 && cc <= 0xDBFF && i + 1 < text.length) {
+      const low = text.charCodeAt(i + 1);
+      if (low >= 0xDC00 && low <= 0xDFFF) {
+        const cp = 0x10000 + ((cc - 0xD800) << 10) + (low - 0xDC00);
+        addBits(0xF0 | (cp >> 18), 8);
+        addBits(0x80 | ((cp >> 12) & 0x3F), 8);
+        addBits(0x80 | ((cp >> 6) & 0x3F), 8);
+        addBits(0x80 | (cp & 0x3F), 8);
+        i++;
+        continue;
+      }
+    }
+    if (cc < 0x80) addBits(cc, 8);
+    else if (cc < 0x800) { addBits(0xC0 | (cc >> 6), 8); addBits(0x80 | (cc & 0x3F), 8); }
+    else { addBits(0xE0 | (cc >> 12), 8); addBits(0x80 | ((cc >> 6) & 0x3F), 8); addBits(0x80 | (cc & 0x3F), 8); }
+  }
+  addBits(0, Math.min(4, maxBits - bits.length));
+  while (bits.length % 8 !== 0) bits.push(0);
+  for (let pad = 0xEC; bits.length < maxBits; pad ^= 0xEC ^ 0x11) addBits(pad, 8);
+  const codewords = [];
+  for (let i = 0; i < bits.length; i += 8) {
+    let b = 0;
+    for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j];
+    codewords.push(b);
+  }
+  const numBlocks = BLOCKS_M[ver], eccLen = ECC_M[ver];
+  // jumlah codeword penuh (sisakan remainder bit yang tidak terpakai, mis. 7 bit di v2)
+  const totalCW = Math.floor(qrRawModules(ver) / 8);
+  const numShort = numBlocks - totalCW % numBlocks;
+  const shortLen = Math.floor(totalCW / numBlocks);
+  const blocks = [];
+  const rsDiv = rsDivisor(eccLen);
+  let k = 0;
+  for (let i = 0; i < numBlocks; i++) {
+    const dat = codewords.slice(k, k + shortLen - eccLen + (i < numShort ? 0 : 1));
+    k += dat.length;
+    const ecc = rsRemainder(dat, rsDiv);
+    if (i < numShort) dat.push(0);
+    blocks.push(dat.concat(ecc));
+  }
+  const finalCW = [];
+  for (let i = 0; i < blocks[0].length; i++) {
+    for (let j = 0; j < numBlocks; j++) {
+      if (i !== shortLen - eccLen || j >= numShort) finalCW.push(blocks[j][i]);
+    }
+  }
+  let bi = 0;
+  for (let right = size - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++) {
+      for (let j = 0; j < 2; j++) {
+        const x = right - j;
+        const up = ((right + 1) & 2) === 0;
+        const y = up ? size - 1 - vert : vert;
+        if (!isFunc[y][x] && bi < finalCW.length * 8) {
+          modules[y][x] = ((finalCW[bi >>> 3] >>> (7 - (bi & 7))) & 1) !== 0;
+          bi++;
+        }
+      }
+    }
+  }
+  let bestP = Infinity, best = null;
+  for (let m = 0; m < 8; m++) {
+    const cand = modules.map(r => r.slice());
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      if (isFunc[y][x]) continue;
+      let inv;
+      switch (m) {
+        case 0: inv = (x + y) % 2 === 0; break;
+        case 1: inv = y % 2 === 0; break;
+        case 2: inv = x % 3 === 0; break;
+        case 3: inv = (x + y) % 3 === 0; break;
+        case 4: inv = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
+        case 5: inv = x * y % 2 + x * y % 3 === 0; break;
+        case 6: inv = (x * y % 2 + x * y % 3) % 2 === 0; break;
+        default: inv = ((x + y) % 2 + x * y % 3) % 2 === 0; break;
+      }
+      if (inv) cand[y][x] = !cand[y][x];
+    }
+    drawFormat(m, cand);
+    const p = qrPenalty(cand, size);
+    if (p < bestP) { bestP = p; best = cand; }
+  }
+  const quiet = 4;
+  const dim = size + quiet * 2;
+  const scale = Math.max(1, Math.ceil(232 / dim));
+  let svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + (dim * scale) + '" height="' + (dim * scale) + '" viewBox="0 0 ' + dim + ' ' + dim + '" shape-rendering="crispEdges" role="img" aria-label="Kode QR untuk membuka rundown">';
+  svg += '<rect width="' + dim + '" height="' + dim + '" fill="#fff"/>';
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+    if (best[y][x]) svg += '<rect x="' + (x + quiet) + '" y="' + (y + quiet) + '" width="1" height="1"/>';
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+// --- UI Bagikan ---
+let pendingShare = null;
+function buildShareUrl() {
+  const data = compressData(JSON.stringify(state));
+  const base = location.href.split("#")[0] || location.href;
+  return { url: base + "#d=" + data, data: data };
+}
+function openShare() {
+  const { url, data } = buildShareUrl();
+  document.getElementById("share-url").value = url;
+  const qrEl = document.getElementById("share-qr");
+  const status = document.getElementById("share-status");
+  qrEl.innerHTML = "";
+  const svg = makeQrSvg(url);
+  if (svg) {
+    qrEl.innerHTML = svg;
+    status.textContent = "Pindai dengan kamera HP untuk membuka rundown. Link berisi data lengkap (" + data.length + " karakter) — tidak diunggah ke server mana pun.";
+    status.className = "share-status";
+  } else {
+    status.textContent = "Rundown terlalu besar untuk kode QR (maks. ~2.300 karakter terkompresi) — gunakan tombol Salin Link atau Export JSON.";
+    status.className = "share-status warn";
+  }
+  document.getElementById("share-modal").hidden = false;
+}
+function closeShare() { document.getElementById("share-modal").hidden = true; }
+async function copyShareLink() {
+  const url = document.getElementById("share-url").value;
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = url;
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url);
+    else fallback();
+    showToast("Link rundown disalin.");
+  } catch (e) {
+    try { fallback(); showToast("Link rundown disalin."); }
+    catch (e2) {
+      showToast("Gagal menyalin otomatis — pilih link lalu salin manual.", true);
+      document.getElementById("share-url").select();
+    }
+  }
+}
+function clearHash() {
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* file:// */ }
+}
+function handleHashLink() {
+  const m = location.hash.match(/^#d=(.+)$/);
+  if (!m) return;
+  let parsed;
+  try {
+    const json = decompressData(m[1]);
+    if (json == null) throw new Error("kosong");
+    parsed = JSON.parse(json);
+  } catch (e) {
+    showToast("Link rundown rusak atau tidak valid.", true);
+    clearHash();
+    return;
+  }
+  const res = validateImport(parsed);
+  if (!res.ok) {
+    showToast(res.msg, true);
+    clearHash();
+    return;
+  }
+  if (localStorage.getItem(STORE_KEY) != null) {
+    pendingShare = res.data;
+    document.getElementById("share-banner").hidden = false;
+  } else {
+    state = res.data;
+    save(true);
+    renderEditor();
+    showToast("Rundown dari link dimuat.");
+    clearHash();
+  }
+}
+
+document.getElementById("btn-share").addEventListener("click", openShare);
+document.getElementById("btn-share-close").addEventListener("click", closeShare);
+document.getElementById("share-modal").addEventListener("click", e => { if (e.target.id === "share-modal") closeShare(); });
+document.getElementById("btn-copy-link").addEventListener("click", copyShareLink);
+document.getElementById("banner-load").addEventListener("click", () => {
+  if (pendingShare) { state = pendingShare; save(true); renderEditor(); }
+  pendingShare = null;
+  document.getElementById("share-banner").hidden = true;
+  clearHash();
+  showToast("Rundown dari link dimuat.");
+});
+document.getElementById("banner-dismiss").addEventListener("click", () => {
+  pendingShare = null;
+  document.getElementById("share-banner").hidden = true;
+  clearHash();
+});
+
 document.getElementById("judul").addEventListener("input", e => { state.judulAcara = e.target.value; save(); });
 document.getElementById("jam-mulai").addEventListener("input", e => {
   state.jamMulaiAcara = e.target.value;
@@ -1295,6 +1847,7 @@ document.getElementById("btn-live").addEventListener("click", enterLive);
 document.getElementById("btn-back").addEventListener("click", exitLive);
 document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
+  if (!document.getElementById("share-modal").hidden) { closeShare(); return; }
   if (!document.getElementById("live").hidden) exitLive();
   else if (!document.getElementById("presenter").hidden) exitPresenter();
 });
@@ -1404,6 +1957,9 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 /* ================== INIT ================== */
 renderEditor();
 save(true);
+
+// Muat rundown yang dibagikan lewat link (#d=...) — banner konfirmasi jika sudah ada data
+handleHashLink();
 
 // Buka langsung ke mode proyeksi via parameter URL (?tampil untuk daftar, ?presenter untuk kartu besar)
 const params = new URLSearchParams(location.search);
