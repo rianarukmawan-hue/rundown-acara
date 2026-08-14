@@ -10,6 +10,10 @@ Aplikasi web untuk **membuat dan mengatur susunan acara** berdasarkan waktu — 
 |---|---|---|
 | <img src="docs/screenshots/editor.png" alt="Mode editor" width="300"> | <img src="docs/screenshots/live-countdown.gif" alt="Mode tampil live — cuplikan countdown" width="300"> | <img src="docs/screenshots/editor-mobile.png" alt="Editor di HP" width="150"> |
 
+Mode **Bagikan** — link berisi seluruh data rundown (terkompresi) + kode QR yang bisa dipindai (QR di bawah menunjuk ke situs live):
+
+<p align="center"><img src="docs/screenshots/share.png" alt="Cuplikan mode Bagikan: modal dengan link dan kode QR" width="620"></p>
+
 ## Cara pakai
 
 - **Langsung:** buka `index.html` di browser (HP/laptop). Semua fitur editor jalan normal; data tersimpan otomatis di browser.
