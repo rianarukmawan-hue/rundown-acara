@@ -672,6 +672,10 @@
         <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
         <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
       </div>
+      <button type="button" class="btn btn-ghost dark reset-view" title="Reset tampilan: ukuran kartu ke Auto & header kembali otomatis">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset
+      </button>
     </div>
     <div class="live-clock" id="live-clock" aria-live="off"></div>
   </div>
@@ -702,6 +706,10 @@
         <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
         <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
       </div>
+      <button type="button" class="btn btn-ghost dark reset-view" title="Reset tampilan: ukuran kartu ke Auto & header kembali otomatis">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Reset
+      </button>
     </div>
     <div class="live-clock" id="pres-clock" aria-live="off"></div>
   </div>
@@ -1438,6 +1446,27 @@ document.querySelectorAll(".card-size").forEach(group => {
 let storedCard = "auto";
 try { storedCard = localStorage.getItem(CARD_KEY) || "auto"; } catch (err) { /* private mode */ }
 applyCardSize(storedCard);
+
+/* ================== RESET TAMPILAN (LIVE/PRESENTER) ================== */
+function resetView() {
+  try { localStorage.setItem(CARD_KEY, "auto"); } catch (err) { /* private mode */ }
+  applyCardSize("auto");
+  revealLiveTops(true);  // tampilkan header kembali & mulai ulang timer auto-hide
+  // Mode Tampil: segarkan sesi aktif & gulir daftar ke kartunya
+  if (!document.getElementById("live").hidden) {
+    updateLive();
+    const list = document.getElementById("live-list");
+    const activeRow = list.querySelector(".l-row.active");
+    if (activeRow) {
+      // pusatkan baris aktif: posisi relatif di area terlihat daftar + setengah sisa ruang
+      const lr = list.getBoundingClientRect(), ar = activeRow.getBoundingClientRect();
+      const target = list.scrollTop + (ar.top - lr.top) - Math.max(0, (list.clientHeight - ar.height) / 2);
+      list.scrollTop = Math.max(0, target);  // lompat instan ke sesi aktif
+    }
+  }
+  showToast("Tampilan direset ke default.");
+}
+document.querySelectorAll(".reset-view").forEach(b => b.addEventListener("click", resetView));
 
 /* ================== PRESENTER (PROYEKTOR) ================== */
 let presenterTimer = null;
