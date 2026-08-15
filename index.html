@@ -310,7 +310,13 @@
     background:linear-gradient(180deg,#150A2E 0%,#1D0F3F 60%,#241145 100%);
     color:#F4EEFF;padding:18px 20px 60px;
   }
-  .live-top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;gap:14px;flex-wrap:wrap;flex:none}
+  .live-top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;gap:14px;flex-wrap:wrap;flex:none;
+    max-height:130px;transition:opacity .3s ease,transform .3s ease,max-height .3s ease}
+  main.live.idle .live-top{
+    max-height:0;opacity:0;transform:translateY(-16px);overflow:hidden;visibility:hidden;
+    pointer-events:none;margin:0;
+    transition:opacity .3s ease,transform .3s ease,max-height .3s ease,visibility 0s .3s
+  }
   .live-clock{
     font-family:"Bebas Neue",sans-serif;font-size:40px;letter-spacing:.08em;color:#FDE9D9;
     text-shadow:0 2px 18px rgba(249,115,22,.35);line-height:1;
@@ -1240,6 +1246,7 @@ function enterLive() {
   document.getElementById("live-judul").textContent = state.judulAcara || "Susunan Acara";
   updateLive();
   liveTimer = setInterval(updateLive, 1000);
+  revealLiveTops(true);
 }
 function exitLive() {
   clearInterval(liveTimer);
@@ -1336,6 +1343,29 @@ function updateLive() {
   }
 }
 
+/* ================== SEMBUNYIKAN HEADER OTOMATIS (LIVE/PRESENTER) ================== */
+let liveIdleTimer = null;
+function hideLiveTops() {
+  if (document.hidden) return;
+  document.querySelectorAll("main.live").forEach(m => m.classList.add("idle"));
+}
+function revealLiveTops(restart) {
+  document.querySelectorAll("main.live").forEach(m => m.classList.remove("idle"));
+  clearTimeout(liveIdleTimer);
+  if (restart) liveIdleTimer = setTimeout(hideLiveTops, 3500);
+}
+document.addEventListener("pointermove", e => {
+  if (e.pointerType === "touch") return;
+  if (e.target.closest && e.target.closest("main.live")) revealLiveTops(true);
+});
+document.addEventListener("pointerdown", e => {
+  const main = e.target.closest && e.target.closest("main.live");
+  if (!main) return;
+  if (main.classList.contains("idle")) revealLiveTops(true);
+  else if (e.pointerType === "touch") hideLiveTops();
+  else revealLiveTops(true);
+});
+
 /* ================== PRESENTER (PROYEKTOR) ================== */
 let presenterTimer = null;
 let lastActiveId = null;
@@ -1399,6 +1429,7 @@ function enterPresenter() {
   presenterTimer = setInterval(updatePresenter, 1000);
   syncFsUi();
   syncChimeUi();
+  revealLiveTops(true);
 }
 function exitPresenter() {
   clearInterval(presenterTimer); presenterTimer = null;
