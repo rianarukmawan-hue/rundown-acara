@@ -408,6 +408,24 @@
     .pres-next-in{font-size:clamp(30px,min(5vw,6vh),44px)}
   }
 
+  /* Ukuran kartu sesi (Auto/Kecil/Besar) — mode Tampil & Presenter */
+  .card-size{display:inline-flex;align-items:center;gap:2px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:3px}
+  .card-size .sz-btn{border:0;background:transparent;color:#C9B8F2;font-size:12.5px;font-weight:700;line-height:1;padding:7px 11px;border-radius:8px;cursor:pointer;transition:background-color .2s,color .2s}
+  .card-size .sz-btn:hover{color:#fff}
+  .card-size .sz-btn[aria-pressed="true"]{background:rgba(139,92,246,.5);color:#fff}
+  main.live[data-card="kecil"] .l-row.active{flex:0 0 auto;min-height:0;padding:10px 16px}
+  main.live[data-card="kecil"] .l-row.active .l-name{font-size:clamp(17px,2vw,24px)}
+  main.live[data-card="kecil"] .l-row.active .l-time{font-size:14px}
+  main.live[data-card="besar"] .l-row.active{flex:1 1 0;min-height:220px;padding:26px 34px}
+  main.live[data-card="besar"] .l-row.active .l-name{font-size:clamp(30px,4.6vw,56px)}
+  main.live[data-card="besar"] .l-row.active .l-time{font-size:19px}
+  main.live[data-card="kecil"] .pres-now{padding:16px 20px}
+  main.live[data-card="kecil"] .pres-name{font-size:clamp(26px,min(4.5vw,8vh),52px)}
+  main.live[data-card="kecil"] .pres-count{font-size:clamp(48px,min(8vw,11vh),84px)}
+  main.live[data-card="besar"] .pres-now{padding:34px 42px}
+  main.live[data-card="besar"] .pres-name{font-size:clamp(48px,min(8vw,13vh),104px)}
+  main.live[data-card="besar"] .pres-count{font-size:clamp(92px,min(13vw,19vh),168px)}
+
   @media (max-width:600px){
     body{font-size:15.5px}
     .topbar-actions{width:100%}
@@ -625,6 +643,11 @@
         <svg class="ic ic-fs-min" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
         <span class="fs-label">Layar Penuh</span>
       </button>
+      <div class="card-size" role="group" aria-label="Ukuran kartu sesi">
+        <button type="button" class="sz-btn" data-size="auto" aria-pressed="true" title="Otomatis menyesuaikan layar">Auto</button>
+        <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
+        <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
+      </div>
     </div>
     <div class="live-clock" id="live-clock" aria-live="off"></div>
   </div>
@@ -650,6 +673,11 @@
         <span class="fs-label">Layar Penuh</span>
       </button>
       <button id="btn-chime" class="btn btn-ghost dark" aria-pressed="true" title="Chime saat sesi berganti"></button>
+      <div class="card-size" role="group" aria-label="Ukuran kartu sesi">
+        <button type="button" class="sz-btn" data-size="auto" aria-pressed="true" title="Otomatis menyesuaikan layar">Auto</button>
+        <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
+        <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
+      </div>
     </div>
     <div class="live-clock" id="pres-clock" aria-live="off"></div>
   </div>
@@ -1365,6 +1393,27 @@ document.addEventListener("pointerdown", e => {
   else if (e.pointerType === "touch") hideLiveTops();
   else revealLiveTops(true);
 });
+
+/* ================== UKURAN KARTU (LIVE/PRESENTER) ================== */
+const CARD_KEY = "rundownAcara.cardSize";
+function applyCardSize(size) {
+  document.querySelectorAll("main.live").forEach(m => { m.dataset.card = size; });
+  document.querySelectorAll(".card-size .sz-btn").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.size === size));
+  });
+}
+document.querySelectorAll(".card-size").forEach(group => {
+  group.addEventListener("click", e => {
+    const btn = e.target.closest(".sz-btn");
+    if (!btn) return;
+    const size = btn.dataset.size;
+    try { localStorage.setItem(CARD_KEY, size); } catch (err) { /* private mode */ }
+    applyCardSize(size);
+  });
+});
+let storedCard = "auto";
+try { storedCard = localStorage.getItem(CARD_KEY) || "auto"; } catch (err) { /* private mode */ }
+applyCardSize(storedCard);
 
 /* ================== PRESENTER (PROYEKTOR) ================== */
 let presenterTimer = null;
