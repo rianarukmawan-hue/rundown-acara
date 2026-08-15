@@ -438,11 +438,30 @@
     .share-url-row .btn{justify-content:center}
   }
 
+  /* ============ TEMPLAT RUNDOWN ============ */
+  .tpl-list{display:flex;flex-direction:column;gap:10px}
+  .tpl-item{
+    display:flex;flex-direction:column;gap:6px;
+    background:var(--primary-soft);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;
+  }
+  .tpl-item:hover{border-color:var(--secondary)}
+  .tpl-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .tpl-name{font-size:16px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px}
+  .tpl-name .ic{width:17px;height:17px;color:var(--primary)}
+  .tpl-meta{font-size:12px;font-weight:700;color:var(--primary-strong);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:2px 10px;white-space:nowrap}
+  .tpl-desc{font-size:13px;color:var(--text-muted);line-height:1.45}
+  .tpl-item .btn{align-self:flex-start;padding:8px 18px;font-size:14px}
+  @media (max-width:480px){
+    .tpl-head{flex-direction:column;align-items:flex-start}
+    .tpl-item .btn{align-self:stretch;justify-content:center}
+  }
+
   /* ============ CETAK / PDF ============ */
   #print-area{display:none}
   @media print{
     body{background:#fff}
-    #editor,#live,.toast,#file-input,#share-modal{display:none!important}
+    #editor,#live,.toast,#file-input,#share-modal,#tpl-modal{display:none!important}
     #print-area{
       display:block;color:#1a1a1a;font-family:"Source Sans 3",system-ui,sans-serif;
       font-size:12px;line-height:1.45;max-width:100%;
@@ -517,6 +536,10 @@
       <button id="btn-share" class="btn btn-ghost" title="Bagikan rundown lewat link atau kode QR">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
         Bagikan
+      </button>
+      <button id="btn-tpl" class="btn btn-ghost" title="Mulai dari templat rundown siap pakai">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h2"/></svg>
+        Templat
       </button>
       <button id="btn-live" class="btn btn-cta">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="m10 8 5 2.5-5 2.5z"/><path d="M8 21h8M12 17v4"/></svg>
@@ -650,6 +673,19 @@
     </div>
     <div id="share-qr" class="share-qr" aria-label="Kode QR untuk membuka link ini"></div>
     <p id="share-status" class="share-status"></p>
+  </div>
+</div>
+
+<div id="tpl-modal" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tpl-title">
+    <div class="modal-head">
+      <h2 id="tpl-title">Templat rundown</h2>
+      <button class="icon-btn" id="btn-tpl-close" aria-label="Tutup" title="Tutup">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p class="share-desc">Mulai cepat dari templat siap pakai — isi nama/PIC/catatan lalu sesuaikan durasinya. Rundown saat ini akan diganti.</p>
+    <div id="tpl-list" class="tpl-list"></div>
   </div>
 </div>
 
@@ -1977,6 +2013,7 @@ document.addEventListener("keydown", e => {
   if (mod && (e.key === "y" || e.key === "Y")) { e.preventDefault(); redo(); return; }
   if (e.key !== "Escape") return;
   if (!document.getElementById("share-modal").hidden) { closeShare(); return; }
+  if (!document.getElementById("tpl-modal").hidden) { closeTplModal(); return; }
   if (!document.getElementById("live").hidden) exitLive();
   else if (!document.getElementById("presenter").hidden) exitPresenter();
 });
@@ -2097,6 +2134,117 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
     navigator.serviceWorker.register("./sw.js").catch(() => { /* abai: mis. preview offline */ });
   });
 }
+
+/* ================== TEMPLAT RUNDOWN ================== */
+// Format sesi: [nama, durasiMenit, pic, catatan, bagian, isIstirahat]
+const TEMPLATES = [
+  {
+    nama: "Rapat Kerja", icon: "briefcase", desc: "Struktur rapat kerja tahunan: laporan, paparan visi-misi, diskusi program, komisi, pleno, hingga penutup.",
+    jamMulai: "08:00",
+    sesi: [
+      ["Pembukaan & Doa", 10, "MC", "Doa dipimpin perwakilan.", "Pembukaan", false],
+      ["Sambutan Ketua Panitia", 15, "Ketua Panitia", "", "Pembukaan", false],
+      ["Laporan Kegiatan Tahun Lalu", 30, "Sekretaris", "Paparan capaian & evaluasi.", "Acara Inti", false],
+      ["Paparan Visi & Misi", 30, "Ketua Umum", "Arah organisasi 1 tahun ke depan.", "Acara Inti", false],
+      ["Diskusi Program Kerja", 45, "Moderator", "Brainstorming usulan program.", "Acara Inti", false],
+      ["Istirahat", 15, "", "Snack & ibadah.", "Istirahat", true],
+      ["Rapat Komisi", 60, "Ketua Komisi", "Per kelompok bidang.", "Acara Inti", false],
+      ["Pleno & Pengesahan", 30, "Moderator", "Presentasi hasil tiap komisi.", "Acara Inti", false],
+      ["Penutup & Doa", 10, "MC", "", "Penutup", false]
+    ]
+  },
+  {
+    nama: "Seminar", icon: "mic", desc: "Susunan seminar nasional: registrasi, keynote, dua sesi materi, tanya jawab, hingga penutup.",
+    jamMulai: "08:30",
+    sesi: [
+      ["Registrasi Peserta", 30, "Panitia", "Absensi & pengambilan goodie bag.", "Persiapan", false],
+      ["Pembukaan", 10, "MC", "Sambutan singkat & tata tertib.", "Pembukaan", false],
+      ["Sambutan Kepala Instansi", 10, "", "", "Pembukaan", false],
+      ["Keynote Speech", 30, "Narasumber Utama", "Tema besar seminar.", "Acara Inti", false],
+      ["Sesi Materi 1", 45, "Pemateri 1", "Judul materi sesi 1.", "Acara Inti", false],
+      ["Istirahat", 15, "", "Coffee break.", "Istirahat", true],
+      ["Sesi Materi 2", 45, "Pemateri 2", "Judul materi sesi 2.", "Acara Inti", false],
+      ["Tanya Jawab", 30, "Moderator", "Pertanyaan dari peserta.", "Acara Inti", false],
+      ["Penutup & Sesi Foto", 15, "MC", "", "Penutup", false]
+    ]
+  },
+  {
+    nama: "Wisuda", icon: "cap", desc: "Prosesi wisuda: pengukuhan lulusan, orasi, penyerahan ijazah per fakultas, doa, dan ramah tamah.",
+    jamMulai: "09:00",
+    sesi: [
+      ["Pembukaan & Lagu Kebangsaan", 10, "MC", "Menyanyikan Indonesia Raya.", "Pembukaan", false],
+      ["Sambutan Rektor", 15, "Rektor", "", "Pembukaan", false],
+      ["Prosesi Wisudawan Masuk", 20, "Protokol", "Wisudawan memasuki aula.", "Acara Inti", false],
+      ["Pengukuhan Lulusan", 30, "Rektor", "Pembacaan SK & sumpah wisudawan.", "Acara Inti", false],
+      ["Orasi Wisudawan", 15, "Perwakilan", "", "Acara Inti", false],
+      ["Penyerahan Ijazah (per Fakultas)", 45, "Protokol", "Sesi foto singkat tiap wisudawan.", "Acara Inti", false],
+      ["Istirahat & Ramah Tamah", 20, "", "Snack bersama.", "Istirahat", true],
+      ["Doa & Penutup", 10, "", "", "Penutup", false]
+    ]
+  },
+  {
+    nama: "Pernikahan", icon: "heart", desc: "Agenda pernikahan: akad, sungkeman, prosesi adat, sesi foto, resepsi, hiburan, hingga penutup.",
+    jamMulai: "09:00",
+    sesi: [
+      ["Akad Nikah", 30, "Penghulu", "Ijab kabul.", "Prosesi", false],
+      ["Sungkeman", 15, "MC", "Kedua mempelai sungkem kepada orang tua.", "Prosesi", false],
+      ["Prosesi Adat", 30, "MC", "Sesuai adat daerah.", "Prosesi", false],
+      ["Sesi Foto Resmi", 20, "Fotografer", "Foto keluarga & tamu undangan.", "Resepsi", false],
+      ["Resepsi & Jamuan", 90, "Catering", "Salam-salaman & jamuan makan.", "Resepsi", false],
+      ["Hiburan", 30, "MC", "Band / karaoke / permainan.", "Resepsi", false],
+      ["Doa Bersama", 10, "", "", "Penutup", false],
+      ["Penutup", 5, "MC", "Ucapan terima kasih.", "Penutup", false]
+    ]
+  }
+];
+const TPL_ICON = {
+  briefcase: '<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+  mic: '<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
+  cap: '<path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/><path d="M22 10v6"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/>'
+};
+function fmtDurText(min) {
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return (h > 0 ? h + " j" : "") + (m > 0 ? (h > 0 ? " " : "") + m + " mnt" : "");
+}
+function openTplModal() {
+  const list = document.getElementById("tpl-list");
+  list.innerHTML = TEMPLATES.map((t, i) => {
+    const totalMin = t.sesi.reduce((a, s) => a + s[1], 0);
+    const breaks = t.sesi.filter(s => s[5]).length;
+    return '<div class="tpl-item">' +
+      '<div class="tpl-head"><span class="tpl-name">' +
+      '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (TPL_ICON[t.icon] || "") + "</svg>" + esc(t.nama) + '</span>' +
+      '<span class="tpl-meta">' + t.sesi.length + " sesi · ±" + fmtDurText(totalMin) + (breaks ? " · " + breaks + " istirahat" : "") + "</span></div>" +
+      '<p class="tpl-desc">' + esc(t.desc) + "</p>" +
+      '<button class="btn btn-primary tpl-use" data-i="' + i + '">Gunakan</button>' +
+      "</div>";
+  }).join("");
+  document.getElementById("tpl-modal").hidden = false;
+}
+function closeTplModal() { document.getElementById("tpl-modal").hidden = true; }
+function applyTemplate(i) {
+  const t = TEMPLATES[i];
+  if (!t) return;
+  if (!confirm("Ganti rundown saat ini dengan templat \"" + t.nama + "\"?")) return;
+  pushUndo(true);
+  state = {
+    judulAcara: t.nama,
+    jamMulaiAcara: t.jamMulai,
+    sesi: t.sesi.map(s => ({ id: uid(), nama: s[0], durasiMenit: s[1], pic: s[2], catatan: s[3], bagian: s[4], isIstirahat: s[5], pinnedJam: null }))
+  };
+  save(true);
+  renderEditor();
+  closeTplModal();
+  showToast("Templat \"" + t.nama + "\" dimuat.");
+}
+document.getElementById("btn-tpl").addEventListener("click", openTplModal);
+document.getElementById("btn-tpl-close").addEventListener("click", closeTplModal);
+document.getElementById("tpl-modal").addEventListener("click", e => { if (e.target.id === "tpl-modal") closeTplModal(); });
+document.getElementById("tpl-list").addEventListener("click", e => {
+  const btn = e.target.closest(".tpl-use");
+  if (btn) applyTemplate(Number(btn.dataset.i));
+});
 
 /* ================== TEMA TERANG/GELAP ================== */
 const THEME_KEY = "rundownAcara.theme";
