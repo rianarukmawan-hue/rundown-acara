@@ -714,6 +714,10 @@
         <p class="tpl-desc">File teks berformat rapi (header, waktu, PIC, catatan) yang bisa dikirim langsung ke chat WhatsApp.</p>
         <div class="exp-actions">
           <button class="btn btn-primary" id="btn-export-text">Ekspor .txt</button>
+          <button class="btn btn-ghost btn-share-file" data-format="txt" id="btn-share-txt">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Bagikan
+          </button>
         </div>
       </div>
       <div class="exp-item">
@@ -727,6 +731,10 @@
         <p class="tpl-desc">File PDF rapi yang dibuat langsung di perangkat (tanpa server) — unduh, bagikan, atau cetak lewat dialog browser.</p>
         <div class="exp-actions">
           <button class="btn btn-primary" id="btn-export-pdf">Ekspor .pdf</button>
+          <button class="btn btn-ghost btn-share-file" data-format="pdf" id="btn-share-pdf">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Bagikan
+          </button>
           <button class="btn btn-ghost" id="btn-print-pdf">Cetak / PDF</button>
         </div>
       </div>
@@ -1600,7 +1608,31 @@ function buildPdfFile() {
   return out;
 }
 
+// ====== Web Share API: bagikan file teks/PDF langsung (WhatsApp muncul di daftar tujuan HP) ======
+async function shareFile(format) {
+  let content, name, type;
+  if (format === "pdf") {
+    content = buildPdfFile(); name = slugJudul() + ".pdf"; type = "application/pdf";
+  } else {
+    content = buildExportText(); name = slugJudul() + ".txt"; type = "text/plain;charset=utf-8";
+  }
+  const file = new File([content], name, { type });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: state.judulAcara || "Susunan Acara", text: state.judulAcara || "" });
+      showToast("File dibagikan.");
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // user batal — tidak apa-apa
+      // error lain → jatuh ke unduh
+    }
+  }
+  downloadBlob(name, content, type);
+  showToast("Web Share tidak tersedia — file diunduh.");
+}
 function openExportModal() {
+  const canShare = !!(navigator.share && navigator.canShare);
+  document.querySelectorAll(".btn-share-file").forEach(b => { b.hidden = !canShare; });
   document.getElementById("export-modal").hidden = false;
 }
 function closeExportModal() { document.getElementById("export-modal").hidden = true; }
@@ -2168,6 +2200,7 @@ document.getElementById("btn-export-pdf").addEventListener("click", () => {
 });
 document.getElementById("btn-print-pdf").addEventListener("click", () => { closeExportModal(); renderPrint(); window.print(); });
 document.getElementById("btn-export-json").addEventListener("click", () => { closeExportModal(); exportJSON(); });
+document.querySelectorAll(".btn-share-file").forEach(b => b.addEventListener("click", () => shareFile(b.dataset.format)));
 document.getElementById("btn-import").addEventListener("click", () => document.getElementById("file-input").click());
 document.getElementById("file-input").addEventListener("change", e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ""; });
 document.getElementById("btn-live").addEventListener("click", enterLive);
