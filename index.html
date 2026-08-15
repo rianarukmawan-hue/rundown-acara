@@ -686,6 +686,7 @@
         <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
         <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
       </div>
+      <button class="btn btn-ghost dark autoscroll-toggle" aria-pressed="true" title="Gulir otomatis mengikuti sesi berjalan saat berganti">Ikuti</button>
       <button type="button" class="btn btn-ghost dark reset-view" title="Reset tampilan: ukuran kartu ke Auto & header kembali otomatis">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         Reset
@@ -723,6 +724,7 @@
         <button type="button" class="sz-btn" data-size="kecil" title="Kartu kecil / ringkas">Kecil</button>
         <button type="button" class="sz-btn" data-size="besar" title="Kartu besar / mencolok">Besar</button>
       </div>
+      <button class="btn btn-ghost dark autoscroll-toggle" aria-pressed="true" title="Gulir otomatis mengikuti sesi berjalan saat berganti">Ikuti</button>
       <button type="button" class="btn btn-ghost dark reset-view" title="Reset tampilan: ukuran kartu ke Auto & header kembali otomatis">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         Reset
@@ -879,7 +881,9 @@ function icon(name, cls) {
     note: '<path d="M15.5 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5z"/><path d="M15 3v6h6"/>',
     share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98"/>',
     link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
-    x: '<path d="M18 6 6 18M6 6l12 12"/>'
+    x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    locate: '<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+    locateOff: '<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><path d="m3 3 18 18"/>'
   };
   return '<svg class="ic ' + (cls || "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || "") + "</svg>";
 }
@@ -1324,6 +1328,8 @@ function enterLive() {
   document.getElementById("presenter").hidden = true;
   document.getElementById("live").hidden = false;
   document.getElementById("live-judul").textContent = state.judulAcara || "Susunan Acara";
+  liveActiveId = null;  // auto-scroll langsung mengikuti sesi aktif saat masuk mode Tampil
+  liveAutoCatchUp = false;
   updateLive();
   liveTimer = setInterval(updateLive, 1000);
   revealLiveTops(true);
@@ -1405,6 +1411,7 @@ function updateLive() {
 
   rowsEl.innerHTML = buildRowsHtml(rows, next);
   syncJump(rowsEl, liveJumpBtn);
+  autoFollowActive(rowsEl, active);
 
   if (active) {
     const remain = active.end * 60 - refSec;
@@ -1456,6 +1463,44 @@ function wireJump(list, btn) {
 }
 wireJump(document.getElementById("live-list"), liveJumpBtn);
 wireJump(document.getElementById("pres-list"), presJumpBtn);
+
+/* ================== AUTO-SCROLL MENGIKUTI SESI (MODE TAMPIL) ================== */
+const AUTOSCROLL_KEY = "rundownAcara.autoScroll";
+let autoScrollOn = localStorage.getItem(AUTOSCROLL_KEY) !== "0";  // default nyala
+let liveActiveId = null;      // id sesi aktif terakhir yang diproses
+let liveAutoCatchUp = false;  // saat toggle ON: lompat sekali ke sesi aktif
+function syncAutoScrollUi() {
+  document.querySelectorAll(".autoscroll-toggle").forEach(b => {
+    b.setAttribute("aria-pressed", autoScrollOn);
+    b.title = autoScrollOn ? "Gulir otomatis mengikuti sesi berjalan — matikan untuk menggulir bebas" : "Gulir otomatis mengikuti sesi berjalan — hidupkan";
+    b.innerHTML = (autoScrollOn ? icon("locate") : icon("locateOff")) + "<span>Ikuti " + (autoScrollOn ? "Nyala" : "Mati") + "</span>";
+  });
+}
+document.querySelectorAll(".autoscroll-toggle").forEach(b => b.addEventListener("click", () => {
+  autoScrollOn = !autoScrollOn;
+  try { localStorage.setItem(AUTOSCROLL_KEY, autoScrollOn ? "1" : "0"); } catch (e) { /* private mode */ }
+  syncAutoScrollUi();
+  if (autoScrollOn) {
+    liveAutoCatchUp = true;  // begitu aktif lagi, langsung kejar ke sesi berjalan
+    // segarkan mode yang sedang tampil (Tampil atau Presenter)
+    if (!document.getElementById("live").hidden) updateLive();
+    else if (!document.getElementById("presenter").hidden) updatePresenter();
+  }
+}));
+syncAutoScrollUi();
+function autoFollowActive(list, active) {
+  if (!autoScrollOn) return;
+  const changed = liveActiveId !== (active ? active.id : null);
+  liveActiveId = active ? active.id : null;
+  if (!active) return;
+  if (!changed && !liveAutoCatchUp) return;  // jangan rebut gulir manual user di tengah sesi
+  liveAutoCatchUp = false;
+  const row = list.querySelector(".l-row.active");
+  if (!row) return;
+  const lr = list.getBoundingClientRect(), ar = row.getBoundingClientRect();
+  const target = list.scrollTop + (ar.top - lr.top) - Math.max(0, (list.clientHeight - ar.height) / 2);
+  list.scrollTop = Math.max(0, target);
+}
 
 /* ================== SEMBUNYIKAN HEADER OTOMATIS (LIVE/PRESENTER) ================== */
 let liveIdleTimer = null;
@@ -1576,6 +1621,8 @@ function enterPresenter() {
   clearInterval(presenterTimer); presenterTimer = null;
   lastActiveId = null;
   lastPrepRemain = null;
+  liveActiveId = null;  // auto-scroll langsung mengikuti sesi aktif saat masuk Presenter
+  liveAutoCatchUp = false;
   document.getElementById("editor").hidden = true;
   document.getElementById("live").hidden = true;
   document.getElementById("presenter").hidden = false;
@@ -1645,6 +1692,7 @@ function updatePresenter() {
 
   listEl.innerHTML = buildRowsHtml(rows, next);
   syncJump(listEl, presJumpBtn);
+  autoFollowActive(listEl, active);
 
   if (active) {
     const remain = active.end * 60 - refSec;
