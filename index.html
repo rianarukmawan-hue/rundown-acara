@@ -440,28 +440,32 @@
 
   /* ============ TEMPLAT RUNDOWN ============ */
   .tpl-list{display:flex;flex-direction:column;gap:10px}
-  .tpl-item{
+  .tpl-item,.exp-item{
     display:flex;flex-direction:column;gap:6px;
     background:var(--primary-soft);border:1px solid var(--line);border-radius:12px;
     padding:12px 14px;
   }
-  .tpl-item:hover{border-color:var(--secondary)}
+  .tpl-item:hover,.exp-item:hover{border-color:var(--secondary)}
   .tpl-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
   .tpl-name{font-size:16px;font-weight:700;color:var(--text);display:inline-flex;align-items:center;gap:8px}
   .tpl-name .ic{width:17px;height:17px;color:var(--primary)}
   .tpl-meta{font-size:12px;font-weight:700;color:var(--primary-strong);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:2px 10px;white-space:nowrap}
   .tpl-desc{font-size:13px;color:var(--text-muted);line-height:1.45}
-  .tpl-item .btn{align-self:flex-start;padding:8px 18px;font-size:14px}
+  .tpl-item .btn,.exp-item .btn{align-self:flex-start;padding:8px 18px;font-size:14px}
+  .exp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .exp-actions .btn{flex:1;justify-content:center;min-width:120px}
   @media (max-width:480px){
     .tpl-head{flex-direction:column;align-items:flex-start}
-    .tpl-item .btn{align-self:stretch;justify-content:center}
+    .tpl-item .btn,.exp-item .btn{align-self:stretch;justify-content:center}
+    .exp-actions{flex-direction:column}
+    .exp-actions .btn{min-width:0}
   }
 
   /* ============ CETAK / PDF ============ */
   #print-area{display:none}
   @media print{
     body{background:#fff}
-    #editor,#live,.toast,#file-input,#share-modal,#tpl-modal{display:none!important}
+    #editor,#live,.toast,#file-input,#share-modal,#tpl-modal,#export-modal{display:none!important}
     #print-area{
       display:block;color:#1a1a1a;font-family:"Source Sans 3",system-ui,sans-serif;
       font-size:12px;line-height:1.45;max-width:100%;
@@ -525,7 +529,7 @@
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
         Import
       </button>
-      <button id="btn-export" class="btn btn-ghost" title="Simpan sebagai file JSON">
+      <button id="btn-export" class="btn btn-ghost" title="Ekspor sebagai teks, PDF, atau JSON">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
         Export
       </button>
@@ -686,6 +690,58 @@
     </div>
     <p class="share-desc">Mulai cepat dari templat siap pakai — isi nama/PIC/catatan lalu sesuaikan durasinya. Rundown saat ini akan diganti.</p>
     <div id="tpl-list" class="tpl-list"></div>
+  </div>
+</div>
+
+<div id="export-modal" class="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="export-title">
+    <div class="modal-head">
+      <h2 id="export-title">Ekspor rundown</h2>
+      <button class="icon-btn" id="btn-export-close" aria-label="Tutup" title="Tutup">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <p class="share-desc">Pilih format — teks dan PDF langsung bisa dikirim lewat WhatsApp.</p>
+    <div class="tpl-list">
+      <div class="exp-item">
+        <div class="tpl-head">
+          <span class="tpl-name">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h2"/></svg>
+            Teks (WhatsApp)
+          </span>
+          <span class="tpl-meta">.txt</span>
+        </div>
+        <p class="tpl-desc">File teks berformat rapi (header, waktu, PIC, catatan) yang bisa dikirim langsung ke chat WhatsApp.</p>
+        <div class="exp-actions">
+          <button class="btn btn-primary" id="btn-export-text">Ekspor .txt</button>
+        </div>
+      </div>
+      <div class="exp-item">
+        <div class="tpl-head">
+          <span class="tpl-name">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            PDF
+          </span>
+          <span class="tpl-meta">File PDF</span>
+        </div>
+        <p class="tpl-desc">File PDF rapi yang dibuat langsung di perangkat (tanpa server) — unduh, bagikan, atau cetak lewat dialog browser.</p>
+        <div class="exp-actions">
+          <button class="btn btn-primary" id="btn-export-pdf">Ekspor .pdf</button>
+          <button class="btn btn-ghost" id="btn-print-pdf">Cetak / PDF</button>
+        </div>
+      </div>
+      <div class="exp-item">
+        <div class="tpl-head">
+          <span class="tpl-name">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            JSON
+          </span>
+          <span class="tpl-meta">Backup</span>
+        </div>
+        <p class="tpl-desc">Backup data lengkap untuk diimpor kembali ke aplikasi nanti.</p>
+        <button class="btn btn-primary" id="btn-export-json">Ekspor .json</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1433,18 +1489,121 @@ function showToast(msg, isError) {
 }
 
 /* ================== EXPORT / IMPORT ================== */
-function exportJSON() {
-  const slug = (state.judulAcara || "rundown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "rundown";
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+function slugJudul() {
+  return (state.judulAcara || "rundown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "rundown";
+}
+function downloadBlob(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = slug + ".json";
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(a.href);
+}
+function exportJSON() {
+  downloadBlob(slugJudul() + ".json", JSON.stringify(state, null, 2), "application/json");
   showToast("Rundown berhasil diexport.");
 }
+// Teks berformat rapi untuk WhatsApp — baris pendek, header jelas, tanpa karakter aneh.
+function buildExportText() {
+  const schedule = computeSchedule();
+  const L = [];
+  L.push("SUSUNAN ACARA");
+  L.push((state.judulAcara || "Susunan Acara").toUpperCase());
+  L.push("");
+  const total = state.sesi.reduce((a, s) => a + (s.durasiMenit || 0), 0);
+  const end = schedule.length ? schedule[schedule.length - 1].end : toMin(state.jamMulaiAcara);
+  L.push("Jam mulai : " + state.jamMulaiAcara + "   Selesai : " + fmtMin(end) + "   Total : " + fmtDurText(total));
+  L.push("-".repeat(46));
+  L.push("");
+  if (!schedule.length) {
+    L.push("Belum ada sesi — susun rundown dulu di editor.");
+  } else {
+    schedule.forEach((s, i) => {
+      const brk = s.isIstirahat ? "  (ISTIRAHAT)" : "";
+      L.push((i + 1) + ". " + fmtMin(s.start) + " - " + fmtMin(s.end) + "  " + (s.nama || "(Tanpa nama)") + brk + "  [" + (s.durasiMenit || 0) + " mnt]");
+      const extra = [];
+      if ((s.pic || "").trim()) extra.push("PIC     : " + s.pic.trim());
+      if ((s.bagian || "").trim()) extra.push("Bagian  : " + s.bagian.trim());
+      if ((s.catatan || "").trim()) extra.push("Catatan : " + s.catatan.trim());
+      if (extra.length) L.push("   " + extra.join("\n   "));
+      L.push("");
+    });
+  }
+  L.push("Dibuat dengan Susunan Acara");
+  return L.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+function exportText() {
+  downloadBlob(slugJudul() + ".txt", buildExportText(), "text/plain;charset=utf-8");
+  showToast("File teks berhasil diexport — kirim lewat WhatsApp.");
+}
+
+// ====== Generator PDF minimal (tanpa server/library) — A4, teks = isi buildExportText ======
+function pdfEscape(s) {
+  let out = "";
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    if (c === 40) out += "\\(";          // (
+    else if (c === 41) out += "\\)";     // )
+    else if (c === 92) out += "\\\\";  // backslash
+    else if (c >= 32 && c <= 126) out += ch;
+    else if (c <= 255) out += "\\" + c.toString(8).padStart(3, "0"); // WinAnsi byte
+    else out += "?";                       // di luar Latin-1
+  }
+  return out;
+}
+function buildPdfFile() {
+  const rawLines = buildExportText().split("\n");
+  const styled = rawLines.map((l, i) => ({
+    t: l,
+    size: i === 0 ? 16 : i === 1 ? 13 : 10.5,
+    bold: i <= 1,
+    lh: l === "" ? 9 : i === 0 ? 24 : i === 1 ? 20 : 15
+  }));
+  const PAGEH = 842, MARGIN = 50, MAXY = PAGEH - MARGIN;
+  let y = MAXY;
+  const pages = [""];
+  for (const ln of styled) {
+    if (ln.t !== "" && y - ln.lh < MARGIN) { pages.push(""); y = MAXY; }
+    if (ln.t !== "") {
+      pages[pages.length - 1] += "BT /F" + (ln.bold ? 2 : 1) + " " + ln.size + " Tf 1 0 0 1 " + MARGIN + " " + y.toFixed(1) + " Tm (" + pdfEscape(ln.t) + ") Tj ET\n";
+    }
+    y -= ln.lh;
+  }
+  const P = pages.length;
+  const parentRef = 3 + 2 * P; // nomor objek halaman-parent (Pages)
+  const objs = [];
+  let n = 1;
+  const add = body => { objs.push(body); return n++; };
+  add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");   // 1
+  add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"); // 2
+  const kids = [];
+  for (let i = 0; i < P; i++) {
+    const contentRef = add("<< /Length " + pages[i].length + " >>\nstream\n" + pages[i] + "endstream");
+    const pageRef = add("<< /Type /Page /Parent " + parentRef + " 0 R /MediaBox [0 0 595 " + PAGEH + "] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents " + contentRef + " 0 R >>");
+    kids.push(pageRef + " 0 R");
+  }
+  const pagesRef = add("<< /Type /Pages /Kids [" + kids.join(" ") + "] /Count " + P + " >>");
+  const rootRef = add("<< /Type /Catalog /Pages " + pagesRef + " 0 R >>");
+  let out = "%PDF-1.4\n";
+  const offsets = [0];
+  for (let i = 0; i < objs.length; i++) {
+    offsets.push(out.length);
+    out += (i + 1) + " 0 obj\n" + objs[i] + "\nendobj\n";
+  }
+  const xrefPos = out.length;
+  out += "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n";
+  for (let i = 1; i <= objs.length; i++) out += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
+  out += "trailer\n<< /Size " + (objs.length + 1) + " /Root " + rootRef + " 0 R >>\nstartxref\n" + xrefPos + "\n%%EOF";
+  return out;
+}
+
+function openExportModal() {
+  document.getElementById("export-modal").hidden = false;
+}
+function closeExportModal() { document.getElementById("export-modal").hidden = true; }
 async function importFile(file) {
   let text;
   try { text = await file.text(); } catch (e) { showToast("File tidak bisa dibaca.", true); return; }
@@ -1998,7 +2157,17 @@ document.getElementById("btn-add").addEventListener("click", () => {
 });
 document.getElementById("btn-undo").addEventListener("click", undo);
 document.getElementById("btn-redo").addEventListener("click", redo);
-document.getElementById("btn-export").addEventListener("click", exportJSON);
+document.getElementById("btn-export").addEventListener("click", openExportModal);
+document.getElementById("btn-export-close").addEventListener("click", closeExportModal);
+document.getElementById("export-modal").addEventListener("click", e => { if (e.target.id === "export-modal") closeExportModal(); });
+document.getElementById("btn-export-text").addEventListener("click", exportText);
+document.getElementById("btn-export-pdf").addEventListener("click", () => {
+  closeExportModal();
+  downloadBlob(slugJudul() + ".pdf", buildPdfFile(), "application/pdf");
+  showToast("File PDF berhasil diexport.");
+});
+document.getElementById("btn-print-pdf").addEventListener("click", () => { closeExportModal(); renderPrint(); window.print(); });
+document.getElementById("btn-export-json").addEventListener("click", () => { closeExportModal(); exportJSON(); });
 document.getElementById("btn-import").addEventListener("click", () => document.getElementById("file-input").click());
 document.getElementById("file-input").addEventListener("change", e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ""; });
 document.getElementById("btn-live").addEventListener("click", enterLive);
@@ -2014,6 +2183,7 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (!document.getElementById("share-modal").hidden) { closeShare(); return; }
   if (!document.getElementById("tpl-modal").hidden) { closeTplModal(); return; }
+  if (!document.getElementById("export-modal").hidden) { closeExportModal(); return; }
   if (!document.getElementById("live").hidden) exitLive();
   else if (!document.getElementById("presenter").hidden) exitPresenter();
 });
