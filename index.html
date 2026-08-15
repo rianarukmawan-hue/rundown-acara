@@ -370,6 +370,20 @@
   .l-status.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
   .l-status.done{background:rgba(16,185,129,.16);color:#9CE8CE}
   .live-end{text-align:center;font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,8vw,72px);letter-spacing:.06em;color:#FDE68A;margin-top:30px}
+  .live-jump{
+    position:absolute;left:50%;bottom:14px;transform:translateX(-50%) scale(.65);
+    width:54px;height:54px;border-radius:50%;
+    background:rgba(139,92,246,.95);color:#fff;border:1px solid rgba(255,255,255,.28);
+    box-shadow:0 10px 30px -8px rgba(124,58,237,.75);
+    display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;z-index:5;cursor:pointer;
+    transition:opacity .25s ease,transform .25s ease,background-color .2s;
+  }
+  .live-jump .ic{width:24px;height:24px}
+  .live-jump.show{opacity:1;pointer-events:auto;transform:translateX(-50%) scale(1)}
+  .live-jump:hover{background:#9F6BFF}
+  .live-jump:focus-visible{outline:var(--focus)}
+  .live-jump.up .ic{transform:rotate(180deg)}
 
   /* ============ PRESENTER (PROYEKTOR) ============ */
   .pres-stage{max-width:1100px;margin:22px auto 0;display:grid;grid-template-columns:2.2fr 1fr;gap:16px;align-items:stretch;width:100%;flex:2 1 65%;min-height:0}
@@ -686,6 +700,9 @@
     <div class="live-progress" id="live-progress" hidden><div class="live-progress-bar" id="live-progress-bar"></div></div>
   </div>
   <div class="live-list" id="live-list" aria-label="Rundown berjalan"></div>
+  <button id="live-jump" class="live-jump" hidden aria-label="Lompat ke sesi berjalan" title="Lompat ke sesi berjalan">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
 </main>
 
 <main id="presenter" class="live" hidden>
@@ -733,6 +750,9 @@
     </section>
   </div>
   <div class="live-list" id="pres-list" aria-label="Rundown berjalan"></div>
+  <button id="pres-jump" class="live-jump" hidden aria-label="Lompat ke sesi berjalan" title="Lompat ke sesi berjalan">
+    <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
 </main>
 
 <div class="toast" id="toast" hidden></div>
@@ -1364,6 +1384,7 @@ function updateLive() {
 
   if (schedule.length === 0) {
     rowsEl.innerHTML = '<div class="live-end">Belum ada sesi</div>';
+    syncJump(rowsEl, liveJumpBtn);
     cdEl.textContent = "--:--";
     lblEl.textContent = "Susun rundown dulu di editor";
     prog.hidden = true;
@@ -1383,6 +1404,7 @@ function updateLive() {
   const next = rows.find(r => !r.done && !r.active && !r.isIstirahat);
 
   rowsEl.innerHTML = buildRowsHtml(rows, next);
+  syncJump(rowsEl, liveJumpBtn);
 
   if (active) {
     const remain = active.end * 60 - refSec;
@@ -1402,6 +1424,38 @@ function updateLive() {
     prog.hidden = true;
   }
 }
+
+/* ================== INDIKATOR LOMBAI KE SESI AKTIF (MODE TAMPIL & PRESENTER) ================== */
+const liveJumpBtn = document.getElementById("live-jump");
+const presJumpBtn = document.getElementById("pres-jump");
+function syncJump(list, btn) {
+  if (!btn) return;
+  const hide = () => { btn.classList.remove("show", "up", "down"); btn.hidden = true; };
+  const activeRow = list.querySelector(".l-row.active");
+  if (!activeRow) return hide();
+  const lr = list.getBoundingClientRect(), ar = activeRow.getBoundingClientRect();
+  const above = ar.bottom < lr.top + 6;
+  const below = ar.top > lr.bottom - 6;
+  if (!above && !below) return hide();
+  btn.hidden = false;
+  btn.classList.toggle("up", above);
+  btn.classList.toggle("down", below);
+  btn.classList.add("show");
+}
+function wireJump(list, btn) {
+  if (!btn) return;
+  list.addEventListener("scroll", () => syncJump(list, btn), { passive: true });
+  btn.addEventListener("click", () => {
+    const activeRow = list.querySelector(".l-row.active");
+    if (!activeRow) return;
+    const lr = list.getBoundingClientRect(), ar = activeRow.getBoundingClientRect();
+    const target = list.scrollTop + (ar.top - lr.top) - Math.max(0, (list.clientHeight - ar.height) / 2);
+    list.scrollTop = Math.max(0, target);
+    syncJump(list, btn);  // sembunyikan segera setelah melompat
+  });
+}
+wireJump(document.getElementById("live-list"), liveJumpBtn);
+wireJump(document.getElementById("pres-list"), presJumpBtn);
 
 /* ================== SEMBUNYIKAN HEADER OTOMATIS (LIVE/PRESENTER) ================== */
 let liveIdleTimer = null;
@@ -1555,6 +1609,7 @@ function updatePresenter() {
 
   if (schedule.length === 0) {
     listEl.innerHTML = "";
+    syncJump(listEl, presJumpBtn);
     tagEl.textContent = "Kosong";
     tagEl.className = "pres-tag live";
     nameEl.textContent = "Belum ada sesi";
@@ -1589,6 +1644,7 @@ function updatePresenter() {
   }
 
   listEl.innerHTML = buildRowsHtml(rows, next);
+  syncJump(listEl, presJumpBtn);
 
   if (active) {
     const remain = active.end * 60 - refSec;
