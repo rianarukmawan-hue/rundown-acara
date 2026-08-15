@@ -304,23 +304,25 @@
   .toast .ic{width:16px;height:16px}
 
   /* ============ LIVE MODE ============ */
-  .live{
-    min-height:100vh;background:linear-gradient(180deg,#150A2E 0%,#1D0F3F 60%,#241145 100%);
+  main.live{
+    position:relative;
+    height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(180deg,#150A2E 0%,#1D0F3F 60%,#241145 100%);
     color:#F4EEFF;padding:18px 20px 60px;
   }
-  .live-top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;gap:14px;flex-wrap:wrap}
+  .live-top{display:flex;align-items:center;justify-content:space-between;max-width:980px;margin:0 auto;gap:14px;flex-wrap:wrap;flex:none}
   .live-clock{
     font-family:"Bebas Neue",sans-serif;font-size:40px;letter-spacing:.08em;color:#FDE9D9;
     text-shadow:0 2px 18px rgba(249,115,22,.35);line-height:1;
   }
-  .live-hero{max-width:980px;margin:26px auto 0;text-align:center}
+  .live-hero{max-width:980px;margin:26px auto 0;text-align:center;flex:none}
   .live-judul{
-    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(34px,6vw,58px);
+    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(34px,min(6vw,9vh),58px);
     letter-spacing:.05em;color:#EDE4FF;line-height:1.05;
   }
   .live-countdown{
     font-family:"Bebas Neue",sans-serif;font-weight:400;
-    font-size:clamp(72px,15vw,150px);line-height:1;margin-top:14px;
+    font-size:clamp(72px,min(15vw,22vh),150px);line-height:1;margin-top:14px;
     background:linear-gradient(180deg,#FDBA74,#F97316);-webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;text-fill-color:transparent;
     filter:drop-shadow(0 6px 30px rgba(249,115,22,.35));font-variant-numeric:tabular-nums;
@@ -329,7 +331,7 @@
   .live-countdown-label strong{color:#FFE3CC;font-weight:700}
   .live-progress{max-width:520px;margin:22px auto 0;height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
   .live-progress-bar{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#A78BFA,#F97316);transition:width .4s linear}
-  .live-list{max-width:980px;margin:34px auto 0;display:flex;flex-direction:column;gap:10px}
+  .live-list{max-width:980px;margin:34px auto 0;display:flex;flex-direction:column;gap:10px;width:100%;flex:1 1 auto;min-height:0;overflow-y:auto}
   .l-row{
     display:flex;align-items:center;gap:16px;padding:14px 18px;border-radius:14px;
     background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
@@ -352,9 +354,11 @@
   .l-row.done{opacity:.42}
   .l-row.done .l-name{text-decoration:line-through}
   .l-row.active{
+    flex:1 1 0;min-height:150px;padding:20px 26px;align-items:center;
     background:linear-gradient(90deg,rgba(124,58,237,.32),rgba(168,85,247,.18));
     border-color:rgba(167,139,250,.65);box-shadow:0 0 0 1px rgba(167,139,250,.35),0 8px 40px -12px rgba(124,58,237,.55);
   }
+  .l-row.active .l-name{font-size:clamp(24px,3.4vw,40px)}
   .l-row.next{border-color:rgba(249,115,22,.55);box-shadow:0 0 24px -8px rgba(249,115,22,.35)}
   .l-status.live{background:#8B5CF6;color:#fff}
   .l-status.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
@@ -362,9 +366,10 @@
   .live-end{text-align:center;font-family:"Bebas Neue",sans-serif;font-size:clamp(40px,8vw,72px);letter-spacing:.06em;color:#FDE68A;margin-top:30px}
 
   /* ============ PRESENTER (PROYEKTOR) ============ */
-  .pres-stage{max-width:1100px;margin:22px auto 0;display:grid;grid-template-columns:2.2fr 1fr;gap:16px;align-items:stretch}
+  .pres-stage{max-width:1100px;margin:22px auto 0;display:grid;grid-template-columns:2.2fr 1fr;gap:16px;align-items:stretch;width:100%;flex:2 1 65%;min-height:0}
   .pres-card{border-radius:22px;padding:28px 32px}
   .pres-now{
+    display:flex;flex-direction:column;justify-content:center;overflow:hidden;
     background:linear-gradient(135deg,rgba(124,58,237,.30),rgba(168,85,247,.12));
     border:1px solid rgba(167,139,250,.55);box-shadow:0 18px 60px -18px rgba(124,58,237,.6);
   }
@@ -373,10 +378,10 @@
   .pres-tag.live{background:#8B5CF6;color:#fff}
   .pres-tag.next{background:transparent;border:2px solid #F97316;color:#FDBA74}
   .pres-tag.amber{background:rgba(245,158,11,.2);border:2px solid rgba(245,158,11,.5);color:#FCD9A0}
-  .pres-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,6.5vw,80px);line-height:1.02;color:#fff;margin-top:10px;overflow-wrap:anywhere}
+  .pres-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,min(6.5vw,11vh),80px);line-height:1.02;color:#fff;margin-top:10px;overflow-wrap:anywhere}
   .pres-sub{font-size:clamp(15px,2vw,19px);color:#C9B8F2;margin-top:8px}
   .pres-count{
-    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(70px,11vw,128px);line-height:1;
+    font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(70px,min(11vw,16vh),128px);line-height:1;
     margin-top:14px;background:linear-gradient(180deg,#FDBA74,#F97316);-webkit-background-clip:text;background-clip:text;
     -webkit-text-fill-color:transparent;text-fill-color:transparent;filter:drop-shadow(0 6px 26px rgba(249,115,22,.35));
     font-variant-numeric:tabular-nums;
@@ -384,8 +389,18 @@
   .pres-count-label{font-size:clamp(15px,2vw,20px);font-weight:600;color:#C9B8F2;margin-top:4px}
   .pres-next-name{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(26px,3.6vw,44px);color:#EDE4FF;line-height:1.05}
   .pres-next-time{font-size:clamp(14px,1.6vw,18px);color:#C9B8F2}
-  .pres-next-in{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,5vw,58px);color:#FDBA74;margin-top:4px}
+  .pres-next-in{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:clamp(38px,min(5vw,8vh),58px);color:#FDBA74;margin-top:4px}
   @media (max-width:800px){.pres-stage{grid-template-columns:1fr}}
+  @media (max-height:720px){
+    .l-row.active{flex:1 1 0;min-height:104px;padding:12px 18px}
+    .l-row.active .l-name{font-size:clamp(20px,2.8vw,30px)}
+    .live-countdown{font-size:clamp(56px,min(15vw,18vh),120px);margin-top:8px}
+    .live-hero{margin-top:16px}
+    .live-list{margin-top:18px;gap:8px}
+    .pres-card{padding:18px 22px}
+    .pres-count{font-size:clamp(56px,min(11vw,13vh),104px)}
+    .pres-next-in{font-size:clamp(30px,min(5vw,6vh),44px)}
+  }
 
   @media (max-width:600px){
     body{font-size:15.5px}
